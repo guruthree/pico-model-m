@@ -22,7 +22,8 @@
 #define Arduino_h
 
 // replace delay with sleep_ms
-#define delay sleep_ms
+//#define delay sleep_ms
+#define delay(x) sleep_us(x*20)
 
 // Treat reading from flash as reading a regular variable, this is just
 // dereferencing the memory address, hopefully a safe hack...

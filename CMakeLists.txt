@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.13)
 
 include(pico_sdk_import.cmake)
 
-project(pico-superkey-board_project C CXX ASM)
+project(pico-model-m_project C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
-add_executable(pico-superkey-board
-    pico-superkey-board.cpp
+add_executable(pico-model-m
+    pico-model-m.cpp
     TinyUSB_Mouse_and_Keyboard/TinyUSB_Mouse_and_Keyboard.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/hid/Adafruit_USBD_HID.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/Adafruit_USBD_Device.cpp
@@ -16,18 +16,18 @@ add_executable(pico-superkey-board
     Print.cpp
 )
 
-target_include_directories(pico-superkey-board PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(pico-model-m PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-target_link_libraries(pico-superkey-board
+target_link_libraries(pico-model-m
     pico_stdlib
     pico_unique_id
     tinyusb_device
     tinyusb_board
 )
-pico_add_extra_outputs(pico-superkey-board)
+pico_add_extra_outputs(pico-model-m)
 
 add_definitions(-DUSE_TINYUSB)
-add_definitions(-DUSB_PRODUCT="Pico Keyboard")
+add_definitions(-DUSB_PRODUCT="The Battleship")
 add_definitions(-DARDUINO_ARCH_RP2040)
 add_definitions(-DCFG_TUSB_CONFIG_FILE="includes/tusb_config.h")
 
