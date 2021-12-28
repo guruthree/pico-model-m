@@ -90,14 +90,14 @@ bool lastpinstate[NUM_DOWN][NUM_ACROSS]; // so we can detect a change
 uint64_t lastpinchangetime[NUM_DOWN][NUM_ACROSS]; // for debounce
 
 // Scroll delay (ms), time between scroll events when key is held down
-#define SCROLL_DELAY 200
+#define SCROLL_DELAY 180
 bool doscroll = false; // enable scrolling mode with the arrow keys
 uint64_t lastscroll = 0; // for repeat scrolling
 
 // the last time a key was pressed to reset out of scroll mode incase it gets stuck
 uint64_t lastpress = 0;
 // time out time in seconds to deactivate scrolling mode in case we get stuck in it
-#define SCROLL_TIMEOUT 15
+#define SCROLL_TIMEOUT 30
 
 // used for checking ghosting
 std::vector<uint8_t> k1, k2;
