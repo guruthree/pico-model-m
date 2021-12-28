@@ -26,53 +26,20 @@
  *
  */
 
-#include "pico/stdlib.h"
+// pico specific includes
 #include "hardware/gpio.h"
 #include "pico/binary_info.h"
 #include "pico/bootrom.h"
 
-#include "ws2812.h"
-
-//#include "includes/usb.h"
-//#include "includes/Adafruit_USBD_CDC-stub.h"
-//#include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
-//#include "includes/TinyKeyboardScancode.h"
+#include "includes/keyboardlayout.h"
 #include "USBKeyboard.h"
+#include "RGBHandler.h"
 
-// Adafruit TinyUSB instance
-extern Adafruit_USBD_Device TinyUSBDevice;
-extern Adafruit_USBD_HID usb_hid;
 
 // Debounce delay (ms)
 #define DEBOUNCE_DELAY 5
 
-float currentColor[3] = {0, 0, 0};
-float targetColor[3] = {0, 0, 0};
 
-#define RED updateTargetColor(33, 0, 0)
-#define GREEN updateTargetColor(0, 33, 0)
-#define BLUE updateTargetColor(0, 0, 33)
-#define ORANGE updateTargetColor(33, 10, 0)
-#define PURPLE updateTargetColor(30, 0, 5)
-
-void updateTargetColor(float r, float g, float b) {
-    targetColor[0] = r;
-    targetColor[1] = g;
-    targetColor[2] = b;
-}
-
-// This function is called by a timer to change the on-board LED to flash
-// differently depending on USB state
-static bool loopTask(repeating_timer_t *rt){
-    for (uint8_t c; c < 3; c++) {
-        currentColor[c] += (targetColor[c] - currentColor[c]) / 5;
-//        if (currentColor[c] < 5) { // this ensures black
-//            currentColor[c] = 0;
-//        }
-    }
-    put_pixel(urgb_u32(currentColor[1], currentColor[0], currentColor[2])); // g r b
-    return true;
-}
 
 // set the pin to input so that it doesn't "drive the bus"
 void setpininput(uint8_t pin) {
@@ -80,18 +47,17 @@ void setpininput(uint8_t pin) {
     gpio_pull_down(pin);
 }
 
-#define NUM_ACROSS 20
-uint8_t across[NUM_ACROSS] = {20, 19, 18, 17, 13, 14, 15, 16, 12, 10, 11, 9, 8, 6, 4, 2, 1, 3, 5, 7};
-#define NUM_DOWN 8
-uint8_t down[NUM_DOWN] = {28, 26, 27, 21, 23, 25, 22, 24};
 
-// the keyboard layout in a 2D array
-#include "includes/keyboardlayout.h"
+
 
 // status of what's active on the matrix
 bool pinstate[NUM_DOWN][NUM_ACROSS];
 bool lastpinstate[NUM_DOWN][NUM_ACROSS]; // so we can detect a change
 uint64_t lastpinchangetime[NUM_DOWN][NUM_ACROSS]; // for debounce
+
+
+// for scrolling
+extern Adafruit_USBD_HID usb_hid;
 
 // Scroll delay (ms), time between scroll events when key is held down
 #define SCROLL_DELAY 180
@@ -108,13 +74,10 @@ std::vector<uint8_t> k1, k2;
 
 bool macrorecording = false;
 // record the macro here
-std::vector< std::vector<uint8_t> > macro_scancode(3, std::vector<uint8_t>(0));
-std::vector< std::vector<uint8_t> > macro_pressed(3, std::vector<uint8_t>(0));;
+std::vector< std::vector<uint8_t> > macro_scancode(NUM_MACROS, std::vector<uint8_t>(0));
+std::vector< std::vector<uint8_t> > macro_pressed(NUM_MACROS, std::vector<uint8_t>(0));;
 uint8_t activemacro = 0;
 
-bool NUM_LOCK = false;
-bool CAPS_LOCK = false;
-bool SCROLL_LOCK = false;
 
 void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or released
     bool doprocess = false;
@@ -227,38 +190,8 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
     return;
 }
 
-// Output report callback for LED indicator such as Caplocks (from hid_keyboard.ino)
-void hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
-{
-    (void) report_id;
-    (void) bufsize;
-    // LED indicator is output report with only 1 byte length
-    if ( report_type != HID_REPORT_TYPE_OUTPUT ) return;
-
-    // The LED bit map is as follows: (also defined by KEYBOARD_LED_* )
-    // Kana (4) | Compose (3) | ScrollLock (2) | CapsLock (1) | Numlock (0)
-    uint8_t ledIndicator = buffer[0];
-
-    // turn on LED if caplock is set
-    NUM_LOCK = ledIndicator & KEYBOARD_LED_NUMLOCK;
-    CAPS_LOCK = ledIndicator & KEYBOARD_LED_CAPSLOCK;
-    SCROLL_LOCK = ledIndicator & KEYBOARD_LED_SCROLLLOCK;
-
-    if (NUM_LOCK && !CAPS_LOCK) {
-        GREEN;
-    }
-    else if (!NUM_LOCK && CAPS_LOCK) {
-        RED;
-    }
-    else if (NUM_LOCK && CAPS_LOCK) {
-        PURPLE;
-    }
-    else {
-        ORANGE;
-//        BLUE;
-    }
-}
-
+void RGB_init();
+//bool RGBloopTask(repeating_timer_t *rt);
 
 int main() {
     bi_decl(bi_program_description("An IBM Model M Keyboard"));
@@ -266,16 +199,16 @@ int main() {
 
     sleep_ms(10); // some sleeps to even out power usage
 
-    ws2812_init();
-    put_pixel(0);
+    RGB.begin();
+    RGB.setBlue();
 
-    // Timer for regularly processing USB events
-    struct repeating_timer timer;
-    add_repeating_timer_ms(15, loopTask, NULL, &timer);
-    BLUE; // blue LED until recognized by the USB host
+
+    // Timer for udating the RGB nicely
+//    struct repeating_timer RGBtimer;
+//    add_repeating_timer_ms(15, RGBloopTask, NULL, &RGBtimer);
 
     // Initialise USB (it'll wait here until plugged in)
-    usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
+//    usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
     Keyboard.begin();
 
     // Initise GPIO pins

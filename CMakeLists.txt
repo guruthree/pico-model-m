@@ -10,6 +10,7 @@ pico_sdk_init()
 add_executable(pico-model-m
     pico-model-m.cpp
     USBKeyboard.cpp
+    RGBHandler.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/hid/Adafruit_USBD_HID.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/Adafruit_USBD_Device.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/ports/rp2040/Adafruit_TinyUSB_rp2040.cpp
