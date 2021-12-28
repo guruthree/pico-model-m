@@ -29,6 +29,14 @@
 #include <string>
 #include <vector>
 
+#include "usb.h"
+
+// GPIO pins for the membrane
+#define NUM_ACROSS 20
+uint8_t across[NUM_ACROSS] = {20, 19, 18, 17, 13, 14, 15, 16, 12, 10, 11, 9, 8, 6, 4, 2, 1, 3, 5, 7};
+#define NUM_DOWN 8
+uint8_t down[NUM_DOWN] = {28, 26, 27, 21, 23, 25, 22, 24};
+
 // https://deskthority.net/wiki/Scancode
 
 // 0xFF -> special function to be handed differently
@@ -53,9 +61,9 @@ enum specialType {
     SPECIAL_RUN,
     SPECIAL_SCROLL,
     SPECIAL_BOOTLOADER,
-//    SPECIAL_TYPE_LOCKS,
 };
 
+// struct to store special key functions
 struct specialFunctionDefinition {
     uint8_t across;
     uint8_t down;
@@ -63,17 +71,19 @@ struct specialFunctionDefinition {
     uint8_t down2;
     bool twokey = false;
     specialType type;
-    std::string topress;
+    std::string topress; // keys to press, or other optional arguments (like macro number)
     specialFunctionDefinition(uint8_t a, uint8_t d, specialType t) : across(a), down(d), type(t) {}
     specialFunctionDefinition(uint8_t a, uint8_t d, specialType t, std::string t2) : across(a), down(d), type(t), topress(t2) {}
     specialFunctionDefinition(uint8_t a, uint8_t d, uint8_t a2, uint8_t d2, specialType t, std::string t2) : across(a), down(d), across2(a2), down2(d2), type(t), topress(t2), twokey(true) {}
 };
 
+// note, macro numbering in specialFunctionDefinition starts at 0x01 to avoid starting a string with 0x00
+#define NUM_MACROS 3
+
 // magic1: 9, 1 - magic2: 10, 1 - magic3: 9, 2
 // magic4: 9, 3 - magic5: 10, 3 - magic6: 9, 4 
 // magic7: 9, 5 - magic8: 10, 5 - magic9: 9, 6 - magic10: 9, 7
 
-//#define NUM_SPECIALS 17
 std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(0, 1, SPECIAL_TYPE, "^"), // keypad carrot
     specialFunctionDefinition(1, 4, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_X, 0x00}), // cut
@@ -106,14 +116,13 @@ std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(9, 2, 9, 6, SPECIAL_TYPE, "tan"), // magic3
 //    specialFunctionDefinition(9, 2, 9, 7, SPECIAL_TYPE, "function"), // magic3
 
-    specialFunctionDefinition(9, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x01, 0x00}), // ctrl again - record 0x01
+    specialFunctionDefinition(9, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x01, 0x00}), // ctrl again - record macro 0x01
     specialFunctionDefinition(10, 1, 14, 2, SPECIAL_BOOTLOADER, {15, 1, 17, 7, 0x00}), // 20 (numpad) 40
-    specialFunctionDefinition(10, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x02, 0x00}), // ctrl again - record 0x02
-    specialFunctionDefinition(9, 2, 2, 3, SPECIAL_MACRO_RECORD, {0x03, 0x00}), // ctrl again - record 0x03
+    specialFunctionDefinition(10, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x02, 0x00}), // ctrl again - record macro 0x02
+    specialFunctionDefinition(9, 2, 2, 3, SPECIAL_MACRO_RECORD, {0x03, 0x00}), // ctrl again - record macro 0x03
     specialFunctionDefinition(2, 3, SPECIAL_MACRO, {0x01, 0x00}), // again - stop record, playback last selected macro
     specialFunctionDefinition(9, 1, SPECIAL_MACRO_SELECT, {0x01, 0x00}), // ctrl again - record 0x01
     specialFunctionDefinition(10, 1, SPECIAL_MACRO_SELECT, {0x02, 0x00}), // ctrl again - record 0x02
     specialFunctionDefinition(9, 2, SPECIAL_MACRO_SELECT, {0x03, 0x00}), // ctrl again - record 0x03
-//    specialFunctionDefinition(9, 2, SPECIAL_TYPE_LOCKS, ""), // keypad carrot
 };
 
