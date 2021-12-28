@@ -23,6 +23,8 @@
  *
  */
 
+#include <algorithm>
+
 #include "usb.h"
 #include "Adafruit_USBD_CDC-stub.h"
 #include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
@@ -62,24 +64,20 @@ void USBKeyboard::pressScancode(uint8_t k) {
         modifiers |= (1 << k);
     }
     else {
+        // assume all is well
         overflowing = false;
-        uint8_t i;
-        // Add k to the key report only if it's not already present
-        // and if there is an empty slot.
-        if (keys[0] != k && keys[1] != k && 
-               keys[2] != k && keys[3] != k &&
-                keys[4] != k && keys[5] != k) {
-
-            for (i = 0; i < MAX_KEYS; i++) {
-                if (keys[i] == 0x00) {
-                    keys[i] = k;
-                    break;
-                }
-            }
-            if (i == MAX_KEYS) {
-                // too many keys presseed, set overflowing
-                overflowing = true;
-            } 
+        // put the pressed key at the start of keys
+        keys.insert(keys.begin(), k);
+        // this makes keys 7 long, if all is well the value in that position is 0
+        if (keys[MAX_KEYS] == 0) {
+            // in which case remove that value so that keys is the correct length
+            while (keys.size() > MAX_KEYS) keys.pop_back();
+        }
+        else {
+            // if the key at the end isn't 0, we're overflowing and should report that
+            // we also shouldn't change keys anymore. releasing a key will remove it and
+            // and keys should shrink
+            overflowing = true;
         }
     }
 }
@@ -90,13 +88,20 @@ void USBKeyboard::releaseScancode(uint8_t k) {
         modifiers &= ~(1 << k);
     }
     else {
-        uint8_t i;    
-        // Test the key report to see if k is present.  Clear it if it exists.
-        // Check all positions in case the key is present more than once (which it shouldn't be)
-        for (i = 0; i < MAX_KEYS; i++) {
-            if (0 != k && keys[i] == k) {
-                keys[i] = 0x00;
-            }
+        // remove the key wherever it is from keys, which will shrink keys
+        keys.erase(std::remove(keys.begin(), keys.end(), k), keys.end());
+
+        if (keys.size() > MAX_KEYS) {
+            // still overflowing :(
+            overflowing = false;
+        }
+        else {
+            // add back onto the end of keys to ensure it's the proper size
+            while (keys.size() < MAX_KEYS) keys.push_back(0);
+
+            // yay we've released enough keys to not be overflowing,
+            // we can continue with normal operation
+            overflowing = false;
         }
     }
 }
