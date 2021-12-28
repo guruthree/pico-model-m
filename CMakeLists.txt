@@ -30,6 +30,9 @@ target_link_libraries(pico-model-m
 pico_add_extra_outputs(pico-model-m)
 
 add_definitions(-DUSE_TINYUSB)
+add_definitions(-DUSB_VID=0x2e8a)
+add_definitions(-DUSB_PID=0xb475)
+add_definitions(-DUSB_MANUFACTURER="@theguruofthree")
 add_definitions(-DUSB_PRODUCT="The Battleship")
 add_definitions(-DARDUINO_ARCH_RP2040)
 add_definitions(-DCFG_TUSB_CONFIG_FILE="includes/tusb_config.h")
