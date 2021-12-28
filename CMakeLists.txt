@@ -13,7 +13,6 @@ add_executable(pico-model-m
     Adafruit_TinyUSB_Arduino/src/arduino/hid/Adafruit_USBD_HID.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/Adafruit_USBD_Device.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/ports/rp2040/Adafruit_TinyUSB_rp2040.cpp
-    Print.cpp
 )
 
 pico_generate_pio_header(pico-model-m ${CMAKE_CURRENT_LIST_DIR}/includes/ws2812.pio)
