@@ -1,4 +1,8 @@
 /*
+ * USBKeyboard.cpp - USBKeyboard class, which provides an interface
+ *                   to the Adafruit usb_hid object for sending keypresses and
+ *                   keeping track of *lock LED status
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 guruthree

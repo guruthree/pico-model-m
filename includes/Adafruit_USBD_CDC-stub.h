@@ -1,6 +1,9 @@
 /*
  * Adafruit_USBD_CDC-stub.h - CDC device class stub for Adafruit TinyUSB
  *                            Minimum stand in for functionality
+ *
+ * The MIT License (MIT)
+ *
  * Copyright (c) 2021 guruthree
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

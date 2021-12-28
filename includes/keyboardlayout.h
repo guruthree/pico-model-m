@@ -1,4 +1,7 @@
 /*
+ * keyboardlayout.h - Defines what keys are related to what pins, and also
+ *                    defines special "magic" key-combos and macros.
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 guruthree

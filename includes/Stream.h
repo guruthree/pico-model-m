@@ -1,6 +1,9 @@
 /*
  * Stream.h - Base class for character-based streams
  *            Minimum stand in for functionality
+ *
+ * The MIT License (MIT)
+ *
  * Copyright (c) 2021 guruthree
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -1,4 +1,6 @@
 /*
+ * tusb_config.h - TinyUSB device end-point configuration.
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)

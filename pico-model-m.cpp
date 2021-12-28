@@ -1,4 +1,7 @@
 /*
+ * pico-model-m.cpp - use an RP2040 chip directly connected to an IBM Model M
+ *                    membrane to provide a USB HID Keyboard
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 guruthree
