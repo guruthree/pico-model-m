@@ -59,6 +59,9 @@ void USBKeyboard::begin() {
 }
 
 void USBKeyboard::pressScancode(uint8_t k) {
+    if (k == HID_KEY_NONE) {
+        return;
+    }
     if (k >= HID_KEY_CONTROL_LEFT && k <= HID_KEY_GUI_RIGHT) {
         k -= HID_KEY_CONTROL_LEFT;
         modifiers |= (1 << k);
@@ -69,7 +72,7 @@ void USBKeyboard::pressScancode(uint8_t k) {
         // put the pressed key at the start of keys
         keys.insert(keys.begin(), k);
         // this makes keys 7 long, if all is well the value in that position is 0
-        if (keys[MAX_KEYS] == 0) {
+        if (keys[MAX_KEYS] == HID_KEY_NONE) {
             // in which case remove that value so that keys is the correct length
             while (keys.size() > MAX_KEYS) keys.pop_back();
         }
@@ -83,6 +86,9 @@ void USBKeyboard::pressScancode(uint8_t k) {
 }
 
 void USBKeyboard::releaseScancode(uint8_t k) {
+    if (k == HID_KEY_NONE) {
+        return;
+    }
     if (k >= HID_KEY_CONTROL_LEFT && k <= HID_KEY_GUI_RIGHT) {
         k -= HID_KEY_CONTROL_LEFT;
         modifiers &= ~(1 << k);
@@ -97,7 +103,7 @@ void USBKeyboard::releaseScancode(uint8_t k) {
         }
         else {
             // add back onto the end of keys to ensure it's the proper size
-            while (keys.size() < MAX_KEYS) keys.push_back(0);
+            while (keys.size() < MAX_KEYS) keys.push_back(HID_KEY_NONE);
 
             // yay we've released enough keys to not be overflowing,
             // we can continue with normal operation
