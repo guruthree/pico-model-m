@@ -129,14 +129,29 @@ void USBKeyboard::sendReport() {
     }
 }
 
+uint8_t const conv_table[128][2] =  { HID_ASCII_TO_KEYCODE };
+
 void USBKeyboard::type(std::string line) {
+    uint8_t k;
+
     for (int i = 0; i < line.length(); i++) {
+        if (line[i] > 127) {
+            // not valid ASCII
+            continue;
+        }
+
         // convert to scan code
-        uint8_t k = 0;
+        k = conv_table[line[i]][0];
+
         pressScancode(k);
+        if (conv_table[line[i]][1]) // shift
+            pressScancode(HID_KEY_SHIFT_LEFT);
         sendReport();
         sleep_ms(2);
+
         releaseScancode(k);
+        if (conv_table[line[i]][1]) // shift
+            releaseScancode(HID_KEY_SHIFT_LEFT);
         sendReport();
         sleep_ms(2);
     }
