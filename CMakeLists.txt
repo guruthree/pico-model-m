@@ -16,7 +16,7 @@ add_executable(pico-model-m
     Print.cpp
 )
 
-pico_generate_pio_header(pico-model-m ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+pico_generate_pio_header(pico-model-m ${CMAKE_CURRENT_LIST_DIR}/includes/ws2812.pio)
 
 target_include_directories(pico-model-m PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 

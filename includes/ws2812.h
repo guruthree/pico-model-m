@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+ * Copyright (c) 2021 guruthree
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 #include "ws2812.pio.h"
