@@ -1,7 +1,6 @@
-/* 
+/*
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Ha Thach (tinyusb.org)
  * Copyright (c) 2021 guruthree
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,28 +23,25 @@
  *
  */
 
-#include "bsp/board.h"
+#include <string>
+#include <vector>
 
-//--------------------------------------------------------------------+
-// Device callbacks
-//--------------------------------------------------------------------+
+#include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
 
-// Invoked when device is mounted
-void tud_mount_cb(void) {
-}
+class USBKeyboard {
+    private:
+        std::vector<uint8_t> keys = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        uint8_t modifiers = 0;
+        bool overflowing = false;
+        const uint8_t overflow[6] = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
 
-// Invoked when device is unmounted
-void tud_umount_cb(void) {
-}
+    public:
+        USBKeyboard();
+        void begin();
+        void pressScancode(uint8_t k);
+        void releaseScancode(uint8_t k);
+        void sendReport();
+        void type(std::string line);
+};
 
-// Invoked when usb bus is suspended
-// remote_wakeup_en : if host allow us  to perform remote wakeup
-// Within 7ms, device must draw an average of current less than 2.5 mA from bus
-void tud_suspend_cb(bool remote_wakeup_en) {
-    (void) remote_wakeup_en;
-}
-
-// Invoked when usb bus is resumed
-void tud_resume_cb(void) {
-}
-
+extern USBKeyboard Keyboard;

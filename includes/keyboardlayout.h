@@ -23,6 +23,7 @@
  *
  */
 
+#include <string>
 #include <vector>
 
 // https://deskthority.net/wiki/Scancode

@@ -30,13 +30,14 @@
 
 #include "ws2812.h"
 
-#include "includes/usb.h"
-#include "includes/Adafruit_USBD_CDC-stub.h"
-#include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
-#include "includes/TinyKeyboardScancode.h"
+//#include "includes/usb.h"
+//#include "includes/Adafruit_USBD_CDC-stub.h"
+//#include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
+//#include "includes/TinyKeyboardScancode.h"
+#include "USBKeyboard.h"
 
 // Adafruit TinyUSB instance
-extern Adafruit_USBD_Device USBDevice;
+extern Adafruit_USBD_Device TinyUSBDevice;
 extern Adafruit_USBD_HID usb_hid;
 
 // Debounce delay (ms)
@@ -133,52 +134,49 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
     if (!doprocess) {
         return;
     }
-//    Keyboard2.println("do process");
 
     switch (specials[c].type) {
         case SPECIAL_TYPE:
             if (pressed) {
-                Keyboard2.print(specials[c].topress);
+                Keyboard.type(specials[c].topress);
             }
             break;
         case SPECIAL_PRESS:
             for (uint8_t d = 0; d < specials[c].topress.length(); d++) {
                 if (pressed) {
-                    Keyboard2.pressScancode(specials[c].topress[d]);
+                    Keyboard.pressScancode(specials[c].topress[d]);
                 }
                 else {
-                    Keyboard2.releaseScancode(specials[c].topress[d]);
+                    Keyboard.releaseScancode(specials[c].topress[d]);
                 }
             }
             break;
         case SPECIAL_RUN:
             if (!pressed) {
-                Keyboard2.pressScancode(HID_KEY_ALT_RIGHT);
-                Keyboard2.pressScancode(HID_KEY_F3);
-                Keyboard2.releaseScancode(HID_KEY_F3);
-                Keyboard2.releaseScancode(HID_KEY_ALT_RIGHT);
+                Keyboard.pressScancode(HID_KEY_ALT_RIGHT);
+                Keyboard.pressScancode(HID_KEY_F3);
+                Keyboard.sendReport();
+                Keyboard.releaseScancode(HID_KEY_F3);
+                Keyboard.releaseScancode(HID_KEY_ALT_RIGHT);
+                Keyboard.sendReport();
                 sleep_ms(150); // need to wait for the terminal to open
-                Keyboard2.println(specials[c].topress);
+                Keyboard.type(specials[c].topress);
+                Keyboard.type("\n");
             }
             break;
         case SPECIAL_SCROLL:
             doscroll = pressed;
-//            Keyboard2.print("sm:");
-//            Keyboard2.println(doscroll);
             break;
         case SPECIAL_MACRO_RECORD:
-//            Keyboard2.println("record?");
             if (!pressed) { // released
                 if (macrorecording == false) {
                     activemacro = specials[c].topress[0]-1; // stored variable starts at 0x01, need to subtract 1 for array index
                     macro_scancode[activemacro].clear();
                     macro_pressed[activemacro].clear();
                     macrorecording = true;
-//                    Keyboard2.println("recording");
                 }
                 else {
                     macrorecording = false;
-//                    Keyboard2.println("stopped recording1");
                 }
             }
             break;
@@ -188,41 +186,34 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
                     macrorecording = false;
                 }
                 activemacro = specials[c].topress[0]-1;
-//                Keyboard2.print("selected macro ");
-//                Keyboard2.println(activemacro);
             }
             break;
         case SPECIAL_MACRO: // play back macro
-//            Keyboard2.println("stopped recording2");
             if (!pressed) { // released
                 if (macrorecording) {
                     macrorecording = false;
                 }
                 else {
-//                    Keyboard2.print("playing back ");
-//                    Keyboard2.println(macro_scancode[activemacro].size());
                     for (uint8_t d = 0; d < macro_scancode[activemacro].size(); d++) {
-//                        char tempaa[50];
-//                        sprintf(tempaa, "%x: %i", macro_scancode[activemacro][d], macro_pressed[activemacro][d]); 
-//                        Keyboard2.println(tempaa);
                         if (macro_pressed[activemacro][d]) {
-                            Keyboard2.pressScancode(macro_scancode[activemacro][d]);
+                            Keyboard.pressScancode(macro_scancode[activemacro][d]);
                         }
                         else {
-                            Keyboard2.releaseScancode(macro_scancode[activemacro][d]);
+                            Keyboard.releaseScancode(macro_scancode[activemacro][d]);
                         }
-//                        sleep_ms(1);
+                        Keyboard.sendReport();
+                        sleep_ms(2);
                     }
                 }
             }
             break;
 /*        case SPECIAL_TYPE_LOCKS:
             if (NUM_LOCK)
-                Keyboard2.println("Num-Lock LED On");
+                Keyboard.type("Num-Lock LED On");
             if (CAPS_LOCK)
-                Keyboard2.println("Caps-Lock LED On");
+                Keyboard.type("Caps-Lock LED On");
             if (SCROLL_LOCK)
-                Keyboard2.println("Scroll-Lock LED On");
+                Keyboard.type("Scroll-Lock LED On");
             break;*/
         case SPECIAL_BOOTLOADER:
             reset_usb_boot(0, 0);
@@ -278,19 +269,11 @@ int main() {
     // Timer for regularly processing USB events
     struct repeating_timer timer;
     add_repeating_timer_ms(15, loopTask, NULL, &timer);
+    BLUE; // blue LED until recognized by the USB host
 
-//    usb_hid.setBootProtocol(true); // shouldn't be needed?
-//    sleep_ms(2);
-    usb_hid.setStringDescriptor("A Battleship that lives again");
-    USBDevice.begin(); // Initialise Adafruit TinyUSB
-    sleep_ms(2);
+    // Initialise USB (it'll wait here until plugged in)
     usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
-    sleep_ms(2);
-
-    // Initialise a keyboard (code will wait here to be plugged in)
-    Keyboard2.begin();
-    sleep_ms(2);
-    BLUE;
+    Keyboard.begin();
 
     // Initise GPIO pins
     // Send pins
@@ -404,14 +387,14 @@ int main() {
                     lastpress = to_us_since_boot(get_absolute_time());
                     uint8_t scancode = keyboardlayout[j][i];
                     if (scancode == 0xFF) { // a special case key
-//                        Keyboard2.println("s!");
+//                        Keyboard.type("s!\n");
                         handleSpecial(j, i, pinstate[j][i]);
                     }
                     else if (!doscroll) { // only handle regular keys if we're not scrolling
                         if (pinstate[j][i])
-                            Keyboard2.pressScancode(scancode);
+                            Keyboard.pressScancode(scancode);
                         else
-                            Keyboard2.releaseScancode(scancode);
+                            Keyboard.releaseScancode(scancode);
                     }
                     else {
                         // a scroll key was probably triggered
@@ -450,5 +433,7 @@ int main() {
                 doscroll = false;
             }
         }
+
+        Keyboard.sendReport();
     }
 }

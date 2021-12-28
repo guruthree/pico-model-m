@@ -32,5 +32,3 @@
 #endif
 
 #include "Print.h"
-
-#define USBDevice TinyUSBDevice
