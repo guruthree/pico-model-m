@@ -27,6 +27,9 @@
  *
  */
 
+#ifndef USBKeyboard_h
+#define USBKeyboard_h
+
 #include <string>
 #include <vector>
 
@@ -39,6 +42,13 @@ class USBKeyboard {
         bool overflowing = false;
         const uint8_t overflow[6] = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
 
+        bool numLock = false;
+        bool capsLock = false;
+        bool scrollLock = false;
+
+        void uk_hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
+        friend void hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
+
     public:
         USBKeyboard();
         void begin();
@@ -46,6 +56,14 @@ class USBKeyboard {
         void releaseScancode(uint8_t k);
         void sendReport();
         void type(std::string line);
+
+        bool getNumLock() { return numLock; };
+        bool getCapsLock() { return capsLock; };
+        bool getScrollLock() { return scrollLock; };
 };
 
 extern USBKeyboard Keyboard;
+
+void hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
+
+#endif
