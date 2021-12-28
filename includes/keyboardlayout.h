@@ -52,6 +52,7 @@ std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(2, 1, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_V, 0x00}), // paste
     specialFunctionDefinition(10, 7, SPECIAL_RUN, "octave"), // octave
     specialFunctionDefinition(19, 0, SPECIAL_SCROLL), // scroll mode
+
     specialFunctionDefinition(9, 1, 9, 3, SPECIAL_TYPE, "else"), // magic1
     specialFunctionDefinition(9, 1, 10, 3, SPECIAL_TYPE, "if"), // magic1
     specialFunctionDefinition(9, 1, 9, 4, SPECIAL_TYPE, "for"), // magic1
@@ -59,6 +60,23 @@ std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(9, 1, 10, 5, SPECIAL_TYPE, "break"), // magic1
     specialFunctionDefinition(9, 1, 9, 6, SPECIAL_TYPE, "continue"), // magic1
     specialFunctionDefinition(9, 1, 9, 7, SPECIAL_TYPE, "while"), // magic1
+
+    specialFunctionDefinition(10, 1, 9, 3, SPECIAL_TYPE, "()"), // magic2
+    specialFunctionDefinition(10, 1, 10, 3, SPECIAL_TYPE, "[]"), // magic2
+    specialFunctionDefinition(10, 1, 9, 4, SPECIAL_TYPE, "{}"), // magic2
+    specialFunctionDefinition(10, 1, 9, 5, SPECIAL_TYPE, "true"), // magic2
+    specialFunctionDefinition(10, 1, 10, 5, SPECIAL_TYPE, "false"), // magic2
+    specialFunctionDefinition(10, 1, 9, 6, SPECIAL_TYPE, "nan"), // magic2
+    specialFunctionDefinition(10, 1, 9, 7, SPECIAL_TYPE, "function"), // magic2
+
+    specialFunctionDefinition(9, 2, 9, 3, SPECIAL_TYPE, "sqrt"), // magic3
+    specialFunctionDefinition(9, 2, 10, 3, SPECIAL_TYPE, "round"), // magic3
+    specialFunctionDefinition(9, 2, 9, 4, SPECIAL_TYPE, "pow"), // magic3
+    specialFunctionDefinition(9, 2, 9, 5, SPECIAL_TYPE, "sin"), // magic3
+    specialFunctionDefinition(9, 2, 10, 5, SPECIAL_TYPE, "cos"), // magic3
+    specialFunctionDefinition(9, 2, 9, 6, SPECIAL_TYPE, "tan"), // magic3
+//    specialFunctionDefinition(9, 2, 9, 7, SPECIAL_TYPE, "function"), // magic3
+
     specialFunctionDefinition(9, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x01, 0x00}), // ctrl again - record 0x01
     specialFunctionDefinition(10, 1, 14, 2, SPECIAL_BOOTLOADER, {15, 1, 17, 7, 0x00}), // 20 (numpad) 40
     specialFunctionDefinition(10, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x02, 0x00}), // ctrl again - record 0x02
