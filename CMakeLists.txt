@@ -16,6 +16,8 @@ add_executable(pico-model-m
     Print.cpp
 )
 
+pico_generate_pio_header(pico-model-m ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+
 target_include_directories(pico-model-m PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 target_link_libraries(pico-model-m
@@ -23,6 +25,7 @@ target_link_libraries(pico-model-m
     pico_unique_id
     tinyusb_device
     tinyusb_board
+    hardware_pio
 )
 pico_add_extra_outputs(pico-model-m)
 

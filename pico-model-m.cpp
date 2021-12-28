@@ -26,6 +26,9 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "pico/binary_info.h"
+#include "pico/bootrom.h"
+
+#include "ws2812.h"
 
 #include "includes/usb.h"
 #include "includes/Adafruit_USBD_CDC-stub.h"
@@ -39,11 +42,33 @@ extern Adafruit_USBD_HID usb_hid;
 // Debounce delay (ms)
 #define DEBOUNCE_DELAY 5
 
+float currentColor[3] = {0, 0, 0};
+float targetColor[3] = {0, 0, 0};
+
+#define RED updateTargetColor(33, 0, 0)
+#define GREEN updateTargetColor(0, 33, 0)
+#define BLUE updateTargetColor(0, 0, 33)
+#define ORANGE updateTargetColor(33, 10, 0)
+#define PURPLE updateTargetColor(30, 0, 5)
+
+void updateTargetColor(float r, float g, float b) {
+    targetColor[0] = r;
+    targetColor[1] = g;
+    targetColor[2] = b;
+}
+
 // This function is called by a timer to change the on-board LED to flash
 // differently depending on USB state
-//static bool loopTask(repeating_timer_t *rt){
-//    return true;
-//}
+static bool loopTask(repeating_timer_t *rt){
+    for (uint8_t c; c < 3; c++) {
+        currentColor[c] += (targetColor[c] - currentColor[c]) / 5;
+//        if (currentColor[c] < 5) { // this ensures black
+//            currentColor[c] = 0;
+//        }
+    }
+    put_pixel(urgb_u32(currentColor[1], currentColor[0], currentColor[2])); // g r b
+    return true;
+}
 
 // set the pin to input so that it doesn't "drive the bus"
 void setpininput(uint8_t pin) {
@@ -199,6 +224,9 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
             if (SCROLL_LOCK)
                 Keyboard2.println("Scroll-Lock LED On");
             break;*/
+        case SPECIAL_BOOTLOADER:
+            reset_usb_boot(0, 0);
+            break;
         default:
             break;
     }
@@ -221,22 +249,48 @@ void hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8
     NUM_LOCK = ledIndicator & KEYBOARD_LED_NUMLOCK;
     CAPS_LOCK = ledIndicator & KEYBOARD_LED_CAPSLOCK;
     SCROLL_LOCK = ledIndicator & KEYBOARD_LED_SCROLLLOCK;
+
+    if (NUM_LOCK && !CAPS_LOCK) {
+        GREEN;
+    }
+    else if (!NUM_LOCK && CAPS_LOCK) {
+        RED;
+    }
+    else if (NUM_LOCK && CAPS_LOCK) {
+        PURPLE;
+    }
+    else {
+        ORANGE;
+//        BLUE;
+    }
 }
+
 
 int main() {
     bi_decl(bi_program_description("An IBM Model M Keyboard"));
     bi_decl(bi_program_feature("USB HID Device"));
 
-    usb_hid.setBootProtocol(true);
-    USBDevice.begin(); // Initialise Adafruit TinyUSB
-    usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
+    sleep_ms(10); // some sleeps to even out power usage
+
+    ws2812_init();
+    put_pixel(0);
 
     // Timer for regularly processing USB events
-//    struct repeating_timer timer;
-//    add_repeating_timer_ms(10, loopTask, NULL, &timer);
+    struct repeating_timer timer;
+    add_repeating_timer_ms(15, loopTask, NULL, &timer);
+
+//    usb_hid.setBootProtocol(true); // shouldn't be needed?
+//    sleep_ms(2);
+    usb_hid.setStringDescriptor("A Battleship that lives again");
+    USBDevice.begin(); // Initialise Adafruit TinyUSB
+    sleep_ms(2);
+    usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
+    sleep_ms(2);
 
     // Initialise a keyboard (code will wait here to be plugged in)
     Keyboard2.begin();
+    sleep_ms(2);
+    BLUE;
 
     // Initise GPIO pins
     // Send pins
@@ -244,11 +298,13 @@ int main() {
         gpio_init(across[i]);
         setpininput(across[i]);
     }
+    sleep_ms(2);
     // Read pins
     for (uint8_t i = 0; i < NUM_DOWN; i++) {
         gpio_init(down[i]);
         setpininput(down[i]);
     }
+    sleep_ms(2);
 
     // Initialise variables for detecting key press
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
@@ -258,11 +314,7 @@ int main() {
             lastpinchangetime[j][i] = 0;
         }
     }
-    // Initialise macro storage
-/*    for (uint8_t i = 0; i < 3; i++) {
-        macro_scancode.push_back({0});
-        macro_pressed.push_back({0});
-    }*/
+    sleep_ms(2);
 
 
     // Main loop

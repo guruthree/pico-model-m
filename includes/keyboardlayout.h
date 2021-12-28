@@ -1,5 +1,7 @@
 #include <vector>
 
+// https://deskthority.net/wiki/Scancode
+
 // 0xFF -> special function to be handed differently
 uint8_t keyboardlayout[NUM_DOWN][NUM_ACROSS] = {
 //                          0 (pin 1)             1 (pin 2)              2 (pin 3)            3 (pin 4)          4 (pin 5)     5 (pin 6)     6 (pin 7)  7 (pin 8)  8 (pin 9)      9 (pin 10)   10 (pin 11)  11 (pin 12)             12 (pin 13)      13 (pin 14)           14 (pin 15)         15 (pin 16)        16 (pin 17)            17 (pin 18)              18 (pin 19)           19 (pin 20)
@@ -21,6 +23,7 @@ enum specialType {
     SPECIAL_MACRO_SELECT,
     SPECIAL_RUN,
     SPECIAL_SCROLL,
+    SPECIAL_BOOTLOADER,
 //    SPECIAL_TYPE_LOCKS,
 };
 
@@ -57,6 +60,7 @@ std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(9, 1, 9, 6, SPECIAL_TYPE, "continue"), // magic1
     specialFunctionDefinition(9, 1, 9, 7, SPECIAL_TYPE, "while"), // magic1
     specialFunctionDefinition(9, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x01, 0x00}), // ctrl again - record 0x01
+    specialFunctionDefinition(10, 1, 14, 2, SPECIAL_BOOTLOADER, {15, 1, 17, 7, 0x00}), // 20 (numpad) 40
     specialFunctionDefinition(10, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x02, 0x00}), // ctrl again - record 0x02
     specialFunctionDefinition(9, 2, 2, 3, SPECIAL_MACRO_RECORD, {0x03, 0x00}), // ctrl again - record 0x03
     specialFunctionDefinition(2, 3, SPECIAL_MACRO, {0x01, 0x00}), // again - stop record, playback last selected macro
