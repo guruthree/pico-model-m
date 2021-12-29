@@ -9,6 +9,7 @@ pico_sdk_init()
 
 add_executable(pico-model-m
     pico-model-m.cpp
+    KeyboardLayout.cpp
     USBKeyboard.cpp
     RGBHandler.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/hid/Adafruit_USBD_HID.cpp

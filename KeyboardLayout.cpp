@@ -1,6 +1,6 @@
 /*
- * keyboardlayout.h - Defines what keys are related to what pins, and also
- *                    defines special "magic" key-combos and macros.
+ * keyboardlayout.cpp - Defines what keys are related to what pins, and also
+ *                      defines special "magic" key-combos and macros.
  *
  * The MIT License (MIT)
  *
@@ -26,15 +26,12 @@
  *
  */
 
-#include <string>
-#include <vector>
-
 #include "usb.h"
 
+#include "KeyboardLayout.h"
+
 // GPIO pins for the membrane
-#define NUM_ACROSS 20
 uint8_t across[NUM_ACROSS] = {20, 19, 18, 17, 13, 14, 15, 16, 12, 10, 11, 9, 8, 6, 4, 2, 1, 3, 5, 7};
-#define NUM_DOWN 8
 uint8_t down[NUM_DOWN] = {28, 26, 27, 21, 23, 25, 22, 24};
 
 // https://deskthority.net/wiki/Scancode
@@ -52,33 +49,6 @@ uint8_t keyboardlayout[NUM_DOWN][NUM_ACROSS] = {
 /*7 (pin 8)*/{       HID_KEY_ALT_LEFT,        HID_KEY_SPACE, HID_KEY_CONTROL_RIGHT,  HID_KEY_SHIFT_LEFT, HID_KEY_BACKSLASH, HID_KEY_NONE, HID_KEY_NONE, HID_KEY_B, HID_KEY_N,           0xFF,         0xFF, HID_KEY_F12,          HID_KEY_NONE,     HID_KEY_NONE,        HID_KEY_SLASH,       HID_KEY_NONE,      HID_KEY_NONE,      HID_KEY_KEYPAD_0,  HID_KEY_KEYPAD_DECIMAL, HID_KEY_KEYPAD_ENTER}
 };
 
-enum specialType {
-    SPECIAL_TYPE,
-    SPECIAL_PRESS,
-    SPECIAL_MACRO,
-    SPECIAL_MACRO_RECORD,
-    SPECIAL_MACRO_SELECT,
-    SPECIAL_RUN,
-    SPECIAL_SCROLL,
-    SPECIAL_BOOTLOADER,
-};
-
-// struct to store special key functions
-struct specialFunctionDefinition {
-    uint8_t across;
-    uint8_t down;
-    uint8_t across2;
-    uint8_t down2;
-    bool twokey = false;
-    specialType type;
-    std::string topress; // keys to press, or other optional arguments (like macro number)
-    specialFunctionDefinition(uint8_t a, uint8_t d, specialType t) : across(a), down(d), type(t) {}
-    specialFunctionDefinition(uint8_t a, uint8_t d, specialType t, std::string t2) : across(a), down(d), type(t), topress(t2) {}
-    specialFunctionDefinition(uint8_t a, uint8_t d, uint8_t a2, uint8_t d2, specialType t, std::string t2) : across(a), down(d), across2(a2), down2(d2), type(t), topress(t2), twokey(true) {}
-};
-
-// note, macro numbering in specialFunctionDefinition starts at 0x01 to avoid starting a string with 0x00
-#define NUM_MACROS 3
 
 // magic1: 9, 1 - magic2: 10, 1 - magic3: 9, 2
 // magic4: 9, 3 - magic5: 10, 3 - magic6: 9, 4 
@@ -125,4 +95,3 @@ std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(10, 1, SPECIAL_MACRO_SELECT, {0x02, 0x00}), // ctrl again - record 0x02
     specialFunctionDefinition(9, 2, SPECIAL_MACRO_SELECT, {0x03, 0x00}), // ctrl again - record 0x03
 };
-

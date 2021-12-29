@@ -31,7 +31,7 @@
 #include "pico/binary_info.h"
 #include "pico/bootrom.h"
 
-#include "includes/keyboardlayout.h"
+#include "KeyboardLayout.h"
 #include "USBKeyboard.h"
 #include "RGBHandler.h"
 
