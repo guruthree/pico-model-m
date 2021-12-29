@@ -56,8 +56,8 @@ uint8_t keyboardlayout[NUM_DOWN][NUM_ACROSS] = {
 
 std::vector<specialFunctionDefinition> specials = {
     specialFunctionDefinition(0, 1, SPECIAL_TYPE, "^"), // keypad carrot
-    specialFunctionDefinition(1, 4, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_X, 0x00}), // cut
-    specialFunctionDefinition(2, 5, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_C, 0x00}), // copy
+    specialFunctionDefinition(2, 5, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_X, 0x00}), // cut
+    specialFunctionDefinition(1, 4, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_C, 0x00}), // copy
     specialFunctionDefinition(2, 1, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_V, 0x00}), // paste
     specialFunctionDefinition(10, 7, SPECIAL_RUN, "octave"), // octave
     specialFunctionDefinition(19, 0, SPECIAL_SCROLL), // scroll mode
