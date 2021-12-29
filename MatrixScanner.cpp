@@ -28,6 +28,8 @@
 
 #include <cstring>
 
+#include "usb.h"
+
 #include "pico/multicore.h"
 #include "pico/sync.h"
 #include "pico/time.h"
@@ -61,6 +63,7 @@ void MatrixScanner::begin() {
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
             pinstate[j][i] = 0;
+            lastpinstate[j][i] = 0;
             lastpinchangetime[j][i] = 0;
         }
     }
@@ -96,11 +99,100 @@ void MatrixScanner::scan() {
 }
 
 void MatrixScanner::preventGhosting() {
+    // do ghost detection, if there's a ghosted key detected that's newly pressed, ignore it
+    // if there is ghosting, but the ghosted key is an impossible key (HID_KEY_NONE) allow it
+
+    // keys with no mapping should never be pressed
+    for (uint8_t i = 0; i < NUM_ACROSS; i++) {
+        for (uint8_t j = 0; j < NUM_DOWN; j++) {
+            if (pinstate[j][i] && keyboardlayout[j][i] == HID_KEY_NONE) {
+                pinstate[j][i] = 0;
+            }
+        }
+    }
+
+    // due to unfortanate matrixing, ctrl alt shift combos can result in ghosting and therefore be ignored.
+    // since in almost all cases pressing one mod key means the other one wouldn't do anything,
+    // ignore the second one that was pressed
+    if (pinstate[7][0] && pinstate[0][3]) { // l_alt, r_alt
+        if (lastpinstate[7][0]) {
+            pinstate[0][3] = false;
+        }
+        else if (lastpinstate[0][3]) {
+            pinstate[7][0] = false;
+        }
+    }
+    if (pinstate[7][3] && pinstate[6][3]) { // l_shift, r_shift
+        if (lastpinstate[7][3]) {
+            pinstate[6][3] = false;
+        }
+        else if (lastpinstate[6][3]) {
+            pinstate[7][3] = false;
+        }
+    }
+    if (pinstate[0][0] && pinstate[7][2]) { // l_ctrl, r_ctrl
+        if (lastpinstate[0][0]) {
+            pinstate[7][2] = false;
+        }
+        else if (lastpinstate[7][2]) {
+            pinstate[0][0] = false;
+        }
+    }
+
+    // caps lock and num lock are never part of a combo, ignore as part of a key combo for anti-ghosting?
+
+    int numghosted;
+    // check through each activated key to see if it's ghosting
+    for (uint8_t i = 0; i < NUM_ACROSS; i++) {
+        for (uint8_t j = 0; j < NUM_DOWN; j++) {
+            if (pinstate[j][i]) {
+                k1.clear();
+                k2.clear();
+                // find other keys activated in the same row and column, to indicate where potential ghosting would be
+                for (uint8_t i2 = 0; i2 < NUM_ACROSS; i2++) {
+                    if (pinstate[j][i2]) {
+                        k1.push_back(i2);
+                    }
+                }
+                for (uint8_t j2 = 0; j2 < NUM_DOWN; j2++) {
+                    if (pinstate[j2][i]) {
+                        k2.push_back(j2);
+                    }
+                }
+                // check all the combinations of row by column, if all 4 are lit up, it's probably ghosting
+                numghosted = 0;
+                for (uint8_t i2 = 0; i2 < k1.size(); i2++) {
+                    for (uint8_t j2 = 0; j2 < k2.size(); j2++) {
+                        if (pinstate[k2[j2]][k1[i2]]) {
+                            numghosted++;
+                        }
+                    }
+                }
+                if (numghosted > 3) { // probably ghosting
+                    for (uint8_t i2 = 0; i2 < k1.size(); i2++) {
+                        for (uint8_t j2 = 0; j2 < k2.size(); j2++) {
+                            // if we're probably ghosting, don't recognize anything that's new & probably causing it
+                            if (pinstate[k2[j2]][k1[i2]] != lastpinstate[k2[j2]][k1[i2]]) {
+                                pinstate[k2[j2]][k1[i2]] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
-void MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS]) {
+void MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]) {
     mutex_enter_blocking(&mx1); // lock
+
     memcpy(outpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
+    memcpy(outlastpinstate, lastpinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
+
+    // the pin state has been fetched meaning changes have officially been registered
+    // thus, the current pinstate is now the former pinstate
+    memcpy(lastpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
+
     mutex_exit(&mx1); // unlock
 }
 

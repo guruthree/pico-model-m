@@ -39,6 +39,9 @@ class MatrixScanner {
         bool lastpinstate[NUM_DOWN][NUM_ACROSS]; // so we can detect a change
         uint64_t lastpinchangetime[NUM_DOWN][NUM_ACROSS]; // for debounce
 
+        // used for checking ghosting
+        std::vector<uint8_t> k1, k2;
+
         mutex_t mx1;
 
         void setpininput(uint8_t pin);
