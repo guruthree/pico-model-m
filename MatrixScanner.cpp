@@ -142,7 +142,8 @@ void MatrixScanner::preventGhosting() {
 
     // caps lock and num lock are never part of a combo, ignore as part of a key combo for anti-ghosting?
 
-    int numghosted;
+    bool newpinstate[NUM_DOWN][NUM_ACROSS];
+    memcpy(newpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
     // check through each activated key to see if it's ghosting
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
@@ -151,37 +152,53 @@ void MatrixScanner::preventGhosting() {
                 k2.clear();
                 // find other keys activated in the same row and column, to indicate where potential ghosting would be
                 for (uint8_t i2 = 0; i2 < NUM_ACROSS; i2++) {
-                    if (pinstate[j][i2]) {
+                    if (pinstate[j][i2] && i2 != i) {
                         k1.push_back(i2);
                     }
                 }
                 for (uint8_t j2 = 0; j2 < NUM_DOWN; j2++) {
-                    if (pinstate[j2][i]) {
+                    if (pinstate[j2][i] && j2 != j) {
                         k2.push_back(j2);
                     }
                 }
-                // check all the combinations of row by column, if all 4 are lit up, it's probably ghosting
-                numghosted = 0;
+
+                // if there's nothing across on the same row there's definetely
+                // no ghosting, as ghosting is evidenced by 4 corners being
+                // highlighted (or vice versa? but both can't be true?)
+                if (k1.size() == 0 || k2.size() == 0) {
+                    continue;
+                }
+
+                // need to check if all 4 corners are pressed for every possible
+                // combination of them
                 for (uint8_t i2 = 0; i2 < k1.size(); i2++) {
                     for (uint8_t j2 = 0; j2 < k2.size(); j2++) {
-                        if (pinstate[k2[j2]][k1[i2]]) {
-                            numghosted++;
-                        }
-                    }
-                }
-                if (numghosted > 3) { // probably ghosting
-                    for (uint8_t i2 = 0; i2 < k1.size(); i2++) {
-                        for (uint8_t j2 = 0; j2 < k2.size(); j2++) {
-                            // if we're probably ghosting, don't recognize anything that's new & probably causing it
-                            if (pinstate[k2[j2]][k1[i2]] != lastpinstate[k2[j2]][k1[i2]]) {
-                                pinstate[k2[j2]][k1[i2]] = 0;
+                        if (pinstate[j][i] && pinstate[k2[j2]][i] && pinstate[j][k1[i2]] && pinstate[k2[j2]][k1[i2]]) {
+                            // 4 corners will register with three corners pressed, so 
+                            // legitametely detecting this is impossible, definitely ghosting happening
+                            if (!lastpinstate[j][i]) {
+                                newpinstate[j][i] = 0;
+                            }
+                            if (!lastpinstate[k2[j2]][i]) {
+                                newpinstate[k2[j2]][i] = 0;
+                            }
+                            if (!lastpinstate[j][k1[i2]]) {
+                                newpinstate[j][k1[i2]] = 0;
+                            }
+                            if (!lastpinstate[k2[j2]][k1[i2]]) {
+                                newpinstate[k2[j2]][k1[i2]] = 0;
                             }
                         }
                     }
                 }
+
+                // there is an issue where sometimes it looks like 1 corner won't read
+                // for the moment ignore this, but we could do a check for 3 corners instead of
+                // 4 when all 4 are regular keys (not modifiers or undefined)
             }
         }
     }
+    memcpy(pinstate, newpinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
 }
 
 void MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]) {
