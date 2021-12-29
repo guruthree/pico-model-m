@@ -26,8 +26,8 @@
  *
  */
 
-#include "pico/stdlib.h"
-#include "hardware/clocks.h"
+#include "pico/time.h"
+#include "hardware/pio.h"
 #include "ws2812.pio.h"
 
 #include "USBKeyboard.h"

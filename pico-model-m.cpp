@@ -27,19 +27,19 @@
  */
 
 // pico specific includes
-#include "hardware/gpio.h"
+#include "pico/time.h"
 #include "pico/binary_info.h"
 #include "pico/bootrom.h"
+#include "hardware/gpio.h"
 
 #include "KeyboardLayout.h"
 #include "USBKeyboard.h"
+#include "MatrixScanner.h"
 #include "RGBHandler.h"
 
 
 // Debounce delay (ms)
 #define DEBOUNCE_DELAY 5
-
-
 
 // set the pin to input so that it doesn't "drive the bus"
 void setpininput(uint8_t pin) {
@@ -47,30 +47,24 @@ void setpininput(uint8_t pin) {
     gpio_pull_down(pin);
 }
 
-
-
-
 // status of what's active on the matrix
 bool pinstate[NUM_DOWN][NUM_ACROSS];
 bool lastpinstate[NUM_DOWN][NUM_ACROSS]; // so we can detect a change
 uint64_t lastpinchangetime[NUM_DOWN][NUM_ACROSS]; // for debounce
 
+// used for checking ghosting
+std::vector<uint8_t> k1, k2;
 
 // for scrolling
 extern Adafruit_USBD_HID usb_hid;
-
 // Scroll delay (ms), time between scroll events when key is held down
 #define SCROLL_DELAY 180
 bool doscroll = false; // enable scrolling mode with the arrow keys
 uint64_t lastscroll = 0; // for repeat scrolling
-
 // the last time a key was pressed to reset out of scroll mode incase it gets stuck
 uint64_t lastpress = 0;
 // time out time in seconds to deactivate scrolling mode in case we get stuck in it
 #define SCROLL_TIMEOUT 30
-
-// used for checking ghosting
-std::vector<uint8_t> k1, k2;
 
 bool macrorecording = false;
 // record the macro here
@@ -190,25 +184,17 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
     return;
 }
 
-void RGB_init();
-//bool RGBloopTask(repeating_timer_t *rt);
-
 int main() {
     bi_decl(bi_program_description("An IBM Model M Keyboard"));
     bi_decl(bi_program_feature("USB HID Device"));
 
-    sleep_ms(10); // some sleeps to even out power usage
+    sleep_ms(10); // a pause to even out power usage
 
+    // initialise RGB
     RGB.begin();
     RGB.setBlue();
 
-
-    // Timer for udating the RGB nicely
-//    struct repeating_timer RGBtimer;
-//    add_repeating_timer_ms(15, RGBloopTask, NULL, &RGBtimer);
-
     // Initialise USB (it'll wait here until plugged in)
-//    usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
     Keyboard.begin();
 
     // Initise GPIO pins
