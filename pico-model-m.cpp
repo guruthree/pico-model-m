@@ -141,6 +141,36 @@ int main() {
             }
         }
 
+        // due to unfortanate matrixing, ctrl alt shift combos can result in ghosting and therefore be ignored
+        // since in almost all cases pressing one mod key means the other one wouldn't do anything
+        // ignore the second one that was pressed
+        if (pinstate[7][0] && pinstate[0][3]) { // l_alt, r_alt
+            if (lastpinstate[7][0]) {
+                pinstate[0][3] = false;
+            }
+            else if (lastpinstate[0][3]) {
+                pinstate[7][0] = false;
+            }
+        }
+        if (pinstate[7][3] && pinstate[6][3]) { // l_shift, r_shift
+            if (lastpinstate[7][3]) {
+                pinstate[6][3] = false;
+            }
+            else if (lastpinstate[6][3]) {
+                pinstate[7][3] = false;
+            }
+        }
+        if (pinstate[0][0] && pinstate[7][2]) { // l_ctrl, r_ctrl
+            if (lastpinstate[0][0]) {
+                pinstate[7][2] = false;
+            }
+            else if (lastpinstate[7][2]) {
+                pinstate[0][0] = false;
+            }
+        }
+
+        // caps lock and num lock are never part of a combo, ignore as part of a key combo for anti-ghosting?
+
         int numghosted;
         // check through each activated key to see if it's ghosting
         for (uint8_t i = 0; i < NUM_ACROSS; i++) {
