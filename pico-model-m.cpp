@@ -37,7 +37,6 @@
 #include "MatrixScanner.h"
 #include "RGBHandler.h"
 
-
 // Debounce delay (ms)
 #define DEBOUNCE_DELAY 5
 
@@ -66,127 +65,10 @@ uint64_t lastpress = 0;
 // time out time in seconds to deactivate scrolling mode in case we get stuck in it
 #define SCROLL_TIMEOUT 30
 
-bool macrorecording = false;
-// record the macro here
-std::vector< std::vector<uint8_t> > macro_scancode(NUM_MACROS, std::vector<uint8_t>(0));
-std::vector< std::vector<uint8_t> > macro_pressed(NUM_MACROS, std::vector<uint8_t>(0));;
-uint8_t activemacro = 0;
-
-
-void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or released
-    bool doprocess = false;
-    uint8_t c;
-    for (c = 0; c < specials.size(); c++) {
-        if (!specials[c].twokey) {
-            if (specials[c].down == down && specials[c].across == across) {
-                doprocess = true;
-                break;
-            }
-        }
-        else { // need to check for two keys being pressed
-//            if (pinstate[specials[c].down][specials[c].across] && pinstate[specials[c].down2][specials[c].across2]) {
-            if (pinstate[specials[c].down][specials[c].across] && specials[c].down2 == down && specials[c].across2 == across) { // activate on the second key
-                doprocess = true;
-                break;
-            }
-        }
-    }
-    if (!doprocess) {
-        return;
-    }
-
-    switch (specials[c].type) {
-        case SPECIAL_TYPE:
-            if (pressed) {
-                Keyboard.type(specials[c].topress);
-            }
-            break;
-        case SPECIAL_PRESS:
-            for (uint8_t d = 0; d < specials[c].topress.length(); d++) {
-                if (pressed) {
-                    Keyboard.pressScancode(specials[c].topress[d]);
-                }
-                else {
-                    Keyboard.releaseScancode(specials[c].topress[d]);
-                }
-            }
-            break;
-        case SPECIAL_RUN:
-            if (!pressed) {
-                Keyboard.pressScancode(HID_KEY_ALT_RIGHT);
-                Keyboard.pressScancode(HID_KEY_F3);
-                Keyboard.sendReport();
-                Keyboard.releaseScancode(HID_KEY_F3);
-                Keyboard.releaseScancode(HID_KEY_ALT_RIGHT);
-                Keyboard.sendReport();
-                sleep_ms(150); // need to wait for the terminal to open
-                Keyboard.type(specials[c].topress);
-                Keyboard.type("\n");
-            }
-            break;
-        case SPECIAL_SCROLL:
-            doscroll = pressed;
-            break;
-        case SPECIAL_MACRO_RECORD:
-            if (!pressed) { // released
-                if (macrorecording == false) {
-                    activemacro = specials[c].topress[0]-1; // stored variable starts at 0x01, need to subtract 1 for array index
-                    macro_scancode[activemacro].clear();
-                    macro_pressed[activemacro].clear();
-                    macrorecording = true;
-                }
-                else {
-                    macrorecording = false;
-                }
-            }
-            break;
-        case SPECIAL_MACRO_SELECT:
-            if (!pressed) { // released
-                if (activemacro != specials[c].topress[0]-1) {
-                    macrorecording = false;
-                }
-                activemacro = specials[c].topress[0]-1;
-            }
-            break;
-        case SPECIAL_MACRO: // play back macro
-            if (!pressed) { // released
-                if (macrorecording) {
-                    macrorecording = false;
-                }
-                else {
-                    for (uint8_t d = 0; d < macro_scancode[activemacro].size(); d++) {
-                        if (macro_pressed[activemacro][d]) {
-                            Keyboard.pressScancode(macro_scancode[activemacro][d]);
-                        }
-                        else {
-                            Keyboard.releaseScancode(macro_scancode[activemacro][d]);
-                        }
-                        Keyboard.sendReport();
-                        sleep_ms(2);
-                    }
-                }
-            }
-            break;
-/*        case SPECIAL_TYPE_LOCKS:
-            if (NUM_LOCK)
-                Keyboard.type("Num-Lock LED On");
-            if (CAPS_LOCK)
-                Keyboard.type("Caps-Lock LED On");
-            if (SCROLL_LOCK)
-                Keyboard.type("Scroll-Lock LED On");
-            break;*/
-        case SPECIAL_BOOTLOADER:
-            reset_usb_boot(0, 0);
-            break;
-        default:
-            break;
-    }
-    return;
-}
+#include "pico-model-m.h"
 
 int main() {
-    bi_decl(bi_program_description("An IBM Model M Keyboard"));
-    bi_decl(bi_program_feature("USB HID Device"));
+    bi_decl(bi_program_description("Firmware to scan an IBM Model M keyboard matrix and register as a USB Keyboard"));
 
     sleep_ms(10); // a pause to even out power usage
 
