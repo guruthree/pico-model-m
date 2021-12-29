@@ -145,19 +145,19 @@ void USBKeyboard::type(std::string line) {
         }
 
         // convert to scan code
-        k = conv_table[line[i]][0];
+        k = conv_table[line[i]][1];
 
         pressScancode(k);
-        if (conv_table[line[i]][1]) // shift
+        if (conv_table[line[i]][0]) // shift
             pressScancode(HID_KEY_SHIFT_LEFT);
         sendReport();
-        sleep_ms(2);
+        sleep_us(500);
 
         releaseScancode(k);
-        if (conv_table[line[i]][1]) // shift
+        if (conv_table[line[i]][0]) // shift
             releaseScancode(HID_KEY_SHIFT_LEFT);
         sendReport();
-        sleep_ms(2);
+        sleep_us(500);
     }
 }
 
