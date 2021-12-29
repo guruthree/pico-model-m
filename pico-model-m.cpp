@@ -63,7 +63,7 @@ int main() {
     RGB.begin();
     RGB.setBlue();
 
-    // Initialise variables for detecting key press
+    // initialise variables for detecting key press
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
             pinstate[j][i] = 0;
@@ -78,41 +78,41 @@ int main() {
     // initialise USB (it'll wait here until plugged in)
     Keyboard.begin();
 
-    // Main loop
+    // main loop
     while (1) {
 
-        KeyMatrix.getPinState(pinstate, lastpinstate);
-
-        // check state against last state
-        // if it's changed, print an update
-        // copy state to last state
-        for (uint8_t i = 0; i < NUM_ACROSS; i++) {
-            for (uint8_t j = 0; j < NUM_DOWN; j++) {
-                if (pinstate[j][i] != lastpinstate[j][i]) { // the pin has changed, do something
-                    lastpress = to_us_since_boot(get_absolute_time());
-                    uint8_t scancode = keyboardlayout[j][i];
-                    if (scancode == 0xFF) { // a special case key
-//                        Keyboard.type("s!\n");
-                        handleSpecial(j, i, pinstate[j][i]);
-                    }
-                    else if (!doscroll) { // only handle regular keys if we're not scrolling
-                        if (pinstate[j][i])
-                            Keyboard.pressScancode(scancode);
-                        else
-                            Keyboard.releaseScancode(scancode);
-                    }
-                    else {
-                        // a scroll key was probably triggered
-                        // reset scroll time delay so that scrolling will immediately trigger
-                        lastscroll = lastpress - SCROLL_DELAY*1000;
-                    }
-//                    lastpinstate[j][i] = pinstate[j][i];
-                    if (macrorecording && !doscroll && scancode != 0xFF && scancode != HID_KEY_NONE) { // shouldn't ever hit none, but just to be safe...
-                        macro_scancode[activemacro].push_back(scancode);
-                        macro_pressed[activemacro].push_back(pinstate[j][i]);
+        // if we secured the mutex lock on pinstate we can process changes
+        if (KeyMatrix.getPinState(pinstate, lastpinstate)) {
+            // check state against last state
+            // if it's changed, print an update
+            // copy state to last state
+            for (uint8_t i = 0; i < NUM_ACROSS; i++) {
+                for (uint8_t j = 0; j < NUM_DOWN; j++) {
+                    if (pinstate[j][i] != lastpinstate[j][i]) { // the pin has changed, do something
+                        lastpress = to_us_since_boot(get_absolute_time());
+                        uint8_t scancode = keyboardlayout[j][i];
+                        if (scancode == 0xFF) { // a special case key
+                            handleSpecial(j, i, pinstate[j][i]);
+                        }
+                        else if (!doscroll) { // only handle regular keys if we're not scrolling
+                            if (pinstate[j][i])
+                                Keyboard.pressScancode(scancode);
+                            else
+                                Keyboard.releaseScancode(scancode);
+                        }
+                        else {
+                            // a scroll key was probably triggered
+                            // reset scroll time delay so that scrolling will immediately trigger
+                            lastscroll = lastpress - SCROLL_DELAY*1000;
+                        }
+                        if (macrorecording && !doscroll && scancode != 0xFF && scancode != HID_KEY_NONE) { // shouldn't ever hit none, but just to be safe...
+                            macro_scancode[activemacro].push_back(scancode);
+                            macro_pressed[activemacro].push_back(pinstate[j][i]);
+                        }
                     }
                 }
             }
+            Keyboard.sendReport();
         }
 
 
@@ -139,8 +139,6 @@ int main() {
             }
         }
 
-        Keyboard.sendReport();
-
-        sleep_ms(2); // 500 hz refresh
+        sleep_us(500); // I think the above code takes around 2 ms, so around a 500 hz refresh?
     }
 }

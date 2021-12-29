@@ -51,7 +51,7 @@ class MatrixScanner {
         void begin();
         void scan();
         void preventGhosting();
-        void getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]);
+        bool getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]);
         
         mutex_t* getMutex() { return &mx1; };
 };

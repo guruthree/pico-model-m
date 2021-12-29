@@ -95,6 +95,10 @@ void MatrixScanner::scan() {
                 pinstate[j][i] = temp;
                 lastpinchangetime[j][i] = now;
             }
+/*            if (temp != pinstate[j][i] && pinstate[j][i] == lastpinstate[j][i]) { // i.e. it's not been reported
+                pinstate[j][i] = temp;
+                lastpinchangetime[j][i] = now;
+            }*/
         }
     }
 }
@@ -201,17 +205,21 @@ void MatrixScanner::preventGhosting() {
     memcpy(pinstate, newpinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
 }
 
-void MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]) {
-    mutex_enter_blocking(&mx1); // lock
+bool MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]) {
+    bool locked = mutex_enter_timeout_ms(&mx1, 1); // request lock
+    if (locked) {
+        // we got the lock so we can update
 
-    memcpy(outpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
-    memcpy(outlastpinstate, lastpinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
+        memcpy(outpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
+        memcpy(outlastpinstate, lastpinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
 
-    // the pin state has been fetched meaning changes have officially been registered
-    // thus, the current pinstate is now the former pinstate
-    memcpy(lastpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
+        // the pin state has been fetched meaning changes have officially been registered
+        // thus, the current pinstate is now the former pinstate
+        memcpy(lastpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
 
-    mutex_exit(&mx1); // unlock
+        mutex_exit(&mx1); // unlock
+    }
+    return locked;
 }
 
 // set the pin to input so that it doesn't "drive the bus"
