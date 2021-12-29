@@ -11,6 +11,7 @@ add_executable(pico-model-m
     pico-model-m.cpp
     KeyboardLayout.cpp
     USBKeyboard.cpp
+    MatrixScanner.cpp
     RGBHandler.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/hid/Adafruit_USBD_HID.cpp
     Adafruit_TinyUSB_Arduino/src/arduino/Adafruit_USBD_Device.cpp
@@ -27,6 +28,7 @@ target_link_libraries(pico-model-m
     tinyusb_device
     tinyusb_board
     hardware_pio
+    pico_multicore
 )
 pico_add_extra_outputs(pico-model-m)
 

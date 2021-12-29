@@ -1,6 +1,6 @@
 /*
  * keyboardlayout.cpp - Defines what keys are related to what pins, and also
- *                      defines special "magic" key-combos and macros.
+ *                      defines special/magic key-combos and macros.
  *
  * The MIT License (MIT)
  *

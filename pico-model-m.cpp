@@ -37,26 +37,16 @@
 #include "MatrixScanner.h"
 #include "RGBHandler.h"
 
-// Debounce delay (ms)
-#define DEBOUNCE_DELAY 5
-
-// set the pin to input so that it doesn't "drive the bus"
-void setpininput(uint8_t pin) {
-    gpio_set_dir(pin, GPIO_IN);
-    gpio_pull_down(pin);
-}
-
 // status of what's active on the matrix
 bool pinstate[NUM_DOWN][NUM_ACROSS];
 bool lastpinstate[NUM_DOWN][NUM_ACROSS]; // so we can detect a change
-uint64_t lastpinchangetime[NUM_DOWN][NUM_ACROSS]; // for debounce
 
 // used for checking ghosting
 std::vector<uint8_t> k1, k2;
 
 // for scrolling
 extern Adafruit_USBD_HID usb_hid;
-// Scroll delay (ms), time between scroll events when key is held down
+// scroll delay (ms), time between scroll events when key is held down
 #define SCROLL_DELAY 180
 bool doscroll = false; // enable scrolling mode with the arrow keys
 uint64_t lastscroll = 0; // for repeat scrolling
@@ -76,58 +66,25 @@ int main() {
     RGB.begin();
     RGB.setBlue();
 
-    // Initialise USB (it'll wait here until plugged in)
-    Keyboard.begin();
-
-    // Initise GPIO pins
-    // Send pins
-    for (uint8_t i = 0; i < NUM_ACROSS; i++) {
-        gpio_init(across[i]);
-        setpininput(across[i]);
-    }
-    sleep_ms(2);
-    // Read pins
-    for (uint8_t i = 0; i < NUM_DOWN; i++) {
-        gpio_init(down[i]);
-        setpininput(down[i]);
-    }
-    sleep_ms(2);
-
     // Initialise variables for detecting key press
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
             pinstate[j][i] = 0;
             lastpinstate[j][i] = 0;
-            lastpinchangetime[j][i] = 0;
         }
     }
-    sleep_ms(2);
 
+    // initialise the keyboard matrix
+    // this will launch the matrix scan onto the second core
+    KeyMatrix.begin();
+
+    // initialise USB (it'll wait here until plugged in)
+    Keyboard.begin();
 
     // Main loop
-    uint64_t now;
     while (1) {
 
-        // Loop through each send pin and then check each read pin
-        for (uint8_t i = 0; i < NUM_ACROSS; i++) {
-
-            gpio_set_dir(across[i], GPIO_OUT);
-            gpio_put(across[i], 1);
-            sleep_us(12); // delay for changes to GPIO to settle
-
-            for (uint8_t j = 0; j < NUM_DOWN; j++) {
-                now = to_us_since_boot(get_absolute_time());
-                bool temp = gpio_get(down[j]);
-
-                if (temp != pinstate[j][i] && (now - lastpinchangetime[j][i]) > DEBOUNCE_DELAY*1000) { // 5 ms deboune time
-                    pinstate[j][i] = temp;
-                    lastpinchangetime[j][i] = now;
-                }
-            }
-
-            setpininput(across[i]); // so that the send pin floats and won't cause a bus conflict
-            sleep_us(12); // delay for changes to GPIO to settle
-        }
+        KeyMatrix.getPinState(pinstate);
 
         // do ghost detection, if there's a ghosted key detected that's newly pressed, ignore it
         // if there is ghosting, but the ghosted key is an impossible key (HID_KEY_NONE) allow it
