@@ -119,26 +119,29 @@ int main() {
         if (doscroll) { // intercept for scrolling
             uint64_t now = to_us_since_boot(get_absolute_time());
             if (now - lastscroll > SCROLL_DELAY*1000) {
+                while( !usb_hid.ready() ) {
+                    sleep_us(100);
+                }
                 if (pinstate[0][16] == true) {
-                    usb_hid.mouseReport(2,0,0,0,1,0); // scroll up
+                    usb_hid.mouseReport(RID_MOUSE,0,0,0,1,0); // scroll up
                 }
                 else if (pinstate[0][15] == true) {
-                    usb_hid.mouseReport(2,0,0,0,-1,0); // scroll down
+                    usb_hid.mouseReport(RID_MOUSE,0,0,0,-1,0); // scroll down
                 }
                 if (pinstate[1][19] == true) {
-                    usb_hid.mouseReport(2,0,0,0,0,1); // scroll right
+                    usb_hid.mouseReport(RID_MOUSE,0,0,0,0,1); // scroll right
                 }
                 else if (pinstate[6][0] == true) {
-                    usb_hid.mouseReport(2,0,0,0,0,-1); // scroll left
+                    usb_hid.mouseReport(RID_MOUSE,0,0,0,0,-1); // scroll left
                 }
                 lastscroll = now;
             }
             else if (now - lastpress > SCROLL_TIMEOUT*1e6) {
-                // after 15 seconds exit out of scroll mode anyway
+                // after X seconds exit out of scroll mode anyway
                 doscroll = false;
             }
         }
 
-        sleep_us(500); // I think the above code takes around 2 ms, so around a 500 hz refresh?
+        sleep_us(500); // I think the above code takes around 2 ms, so around a 400 hz refresh?
     }
 }

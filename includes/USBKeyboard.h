@@ -35,6 +35,9 @@
 
 #include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
 
+#define RID_KEYBOARD 1
+#define RID_MOUSE 2
+
 class USBKeyboard {
     private:
         std::vector<uint8_t> keys = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

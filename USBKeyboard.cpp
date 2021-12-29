@@ -34,9 +34,6 @@
 #include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
 #include "USBKeyboard.h"
 
-#define RID_KEYBOARD 1
-#define RID_MOUSE 2
-
 #define MAX_KEYS 6
 
 uint8_t const desc_hid_report[] =
@@ -121,7 +118,7 @@ void USBKeyboard::sendReport() {
         TinyUSBDevice.remoteWakeup();
     }
     while( !usb_hid.ready() ) {
-        sleep_us(10);
+        sleep_us(100);
     }
     if (!overflowing) {
         usb_hid.keyboardReport(RID_KEYBOARD, modifiers, keys.data());
