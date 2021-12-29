@@ -64,9 +64,10 @@ struct specialFunctionDefinition {
     uint8_t down2;
     bool twokey = false;
     specialType type;
-    std::string topress; // keys to press, or other optional arguments (like macro number)
+    std::string topress = ""; // keys to press, or other optional arguments (like macro number)
     specialFunctionDefinition(uint8_t a, uint8_t d, specialType t) : across(a), down(d), type(t) {}
     specialFunctionDefinition(uint8_t a, uint8_t d, specialType t, std::string t2) : across(a), down(d), type(t), topress(t2) {}
+    specialFunctionDefinition(uint8_t a, uint8_t d, uint8_t a2, uint8_t d2, specialType t) : across(a), down(d), across2(a2), down2(d2), type(t), twokey(true) {}
     specialFunctionDefinition(uint8_t a, uint8_t d, uint8_t a2, uint8_t d2, specialType t, std::string t2) : across(a), down(d), across2(a2), down2(d2), type(t), topress(t2), twokey(true) {}
 };
 
