@@ -69,13 +69,18 @@ bool RGBHandler::loopTask(repeating_timer_t *rt) {
         setPurple();
     }
     else {
-        setOrange();
+        if ( !TinyUSBDevice.mounted() ) {
+            setBlue();
+        }
+        else {
+            setOrange();
+        }
     }
 
     for (uint8_t c; c < 3; c++) {
         currentColor[c] += (targetColor[c] - currentColor[c]) / 5;
     }
-    put_pixel(urgb_u32(currentColor[1], currentColor[0], currentColor[2])); // g r b*/
+    put_pixel(urgb_u32(currentColor[1], currentColor[0], currentColor[2])); // g r b
 
     return true;
 }

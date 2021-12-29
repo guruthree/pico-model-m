@@ -63,8 +63,9 @@ class RGBHandler {
         void setRed() { updateTargetColor(33, 0, 0); };
         void setGreen() { updateTargetColor(0, 33, 0); };
         void setBlue() { updateTargetColor(0, 0, 33); }
-        void setOrange() { updateTargetColor(33, 10, 0); };
+        void setOrange() { updateTargetColor(30, 10, 0); };
         void setPurple() { updateTargetColor(30, 0, 5); };
+        void setYellow() { updateTargetColor(17, 20, 0); }
 };
 
 extern RGBHandler RGB;

@@ -57,8 +57,8 @@ void USBKeyboard::begin() {
     usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
 //    usb_hid.setBootProtocol(true); // shouldn't be needed?
     usb_hid.begin();
-    while (!TinyUSBDevice.mounted()) {
-        sleep_ms(1);
+    while ( !TinyUSBDevice.mounted() ) {
+        sleep_ms(5);
     }
 }
 
