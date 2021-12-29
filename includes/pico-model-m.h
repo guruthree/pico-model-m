@@ -26,7 +26,7 @@
  *
  */
 
-// everything for the special functions
+// everything for the special/macro functions
 
 bool macrorecording = false;
 // record the macro here
@@ -34,7 +34,9 @@ std::vector< std::vector<uint8_t> > macro_scancode(NUM_MACROS, std::vector<uint8
 std::vector< std::vector<uint8_t> > macro_pressed(NUM_MACROS, std::vector<uint8_t>(0));;
 uint8_t activemacro = 0;
 
-
+// called when scancode 0xFF is pressed
+// the down and across position is compared to the list of specialFunctionDefinitions
+// and then the action defiend by that object is performeed
 void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or released
     bool doprocess = false;
     uint8_t c;
@@ -46,14 +48,13 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
             }
         }
         else { // need to check for two keys being pressed
-//            if (pinstate[specials[c].down][specials[c].across] && pinstate[specials[c].down2][specials[c].across2]) {
             if (pinstate[specials[c].down][specials[c].across] && specials[c].down2 == down && specials[c].across2 == across) { // activate on the second key
                 doprocess = true;
                 break;
             }
         }
     }
-    if (!doprocess) {
+    if (!doprocess) { // no matching definition found, do nothing
         return;
     }
 
@@ -73,7 +74,7 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
                 }
             }
             break;
-        case SPECIAL_RUN:
+        case SPECIAL_RUN: // opens a terminal (alt-f3 is my key combo for that) and runs a command
             if (!pressed) {
                 Keyboard.pressScancode(HID_KEY_ALT_RIGHT);
                 Keyboard.pressScancode(HID_KEY_F3);
@@ -129,14 +130,6 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
                 }
             }
             break;
-/*        case SPECIAL_TYPE_LOCKS:
-            if (NUM_LOCK)
-                Keyboard.type("Num-Lock LED On");
-            if (CAPS_LOCK)
-                Keyboard.type("Caps-Lock LED On");
-            if (SCROLL_LOCK)
-                Keyboard.type("Scroll-Lock LED On");
-            break;*/
         case SPECIAL_BOOTLOADER:
             reset_usb_boot(0, 0);
             break;
