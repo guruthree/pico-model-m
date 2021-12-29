@@ -45,7 +45,7 @@ void RGBHandler::begin() {
     ws2812_program_init(LED_PIO, LED_SM, offset, WS2812_PIN, 800000, IS_RGBW);
 
     // Timer for udating the RGB nicely
-    add_repeating_timer_ms(15, RGBloopTask, NULL, &RGBtimer);
+    add_repeating_timer_ms(10, RGBloopTask, NULL, &RGBtimer);
 
     put_pixel(0);
 }
