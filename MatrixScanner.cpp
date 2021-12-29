@@ -75,26 +75,26 @@ void MatrixScanner::begin() {
 
 void MatrixScanner::scan() {
     uint64_t now;
+    bool temp;
 
     // Loop through each send pin and then check each read pin
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
 
         gpio_set_dir(across[i], GPIO_OUT);
         gpio_put(across[i], 1);
-        sleep_us(12); // delay for changes to GPIO to settle
+        sleep_us(30); // delay for changes to GPIO to settle
+        uint32_t readings = gpio_get_all();
+        setpininput(across[i]); // so that the send pin floats and won't cause a bus conflict
 
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
             now = to_us_since_boot(get_absolute_time());
-            bool temp = gpio_get(down[j]);
+            temp = readings & (1 << down[j]);
 
-            if (temp != pinstate[j][i] && (now - lastpinchangetime[j][i]) > DEBOUNCE_DELAY*1000) { // 5 ms deboune time
+           if (temp != pinstate[j][i] && (now - lastpinchangetime[j][i]) > DEBOUNCE_DELAY*1000) { // X ms debounce time
                 pinstate[j][i] = temp;
                 lastpinchangetime[j][i] = now;
             }
         }
-
-        setpininput(across[i]); // so that the send pin floats and won't cause a bus conflict
-        sleep_us(12); // delay for changes to GPIO to settle
     }
 }
 
