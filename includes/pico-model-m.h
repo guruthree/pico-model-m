@@ -79,9 +79,11 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
                 Keyboard.pressScancode(HID_KEY_ALT_RIGHT);
                 Keyboard.pressScancode(HID_KEY_F3);
                 Keyboard.sendReport();
+
                 Keyboard.releaseScancode(HID_KEY_F3);
                 Keyboard.releaseScancode(HID_KEY_ALT_RIGHT);
                 Keyboard.sendReport();
+
                 sleep_ms(150); // need to wait for the terminal to open
                 Keyboard.type(specials[c].topress);
                 Keyboard.type("\n");
@@ -125,7 +127,6 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
                             Keyboard.releaseScancode(macro_scancode[activemacro][d]);
                         }
                         Keyboard.sendReport();
-                        sleep_ms(2);
                     }
                 }
             }

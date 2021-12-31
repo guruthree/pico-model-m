@@ -128,6 +128,7 @@ void USBKeyboard::sendReport() {
         // https://wiki.osdev.org/USB_Human_Interface_Devices
         usb_hid.keyboardReport(RID_KEYBOARD, modifiers, (uint8_t*)overflow);
     }
+    sleep_us(1000);
 }
 
 uint8_t const conv_table[128][2] =  { HID_ASCII_TO_KEYCODE };
@@ -148,13 +149,11 @@ void USBKeyboard::type(std::string line) {
         if (conv_table[line[i]][0]) // shift
             pressScancode(HID_KEY_SHIFT_LEFT);
         sendReport();
-        sleep_us(500);
 
         releaseScancode(k);
         if (conv_table[line[i]][0]) // shift
             releaseScancode(HID_KEY_SHIFT_LEFT);
         sendReport();
-        sleep_us(500);
     }
 }
 
