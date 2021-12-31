@@ -41,9 +41,12 @@ class RGBHandler {
         #if NUM_PIXELS != 1
             #error "Currently only coded up for 1 pixel"
         #endif
-        float currentColor[3] = {0, 0, 0};
-        float targetColor[3] = {0, 0, 0};
+        // stored as float so that dividing to get the smoothe gradient converges
+        float currentColor[3] = {0.0f, 0.0f, 0.0f};
+        float targetColor[3] = {0.0f, 0.0f, 0.0f};
 
+        // functions for sending the pixel color and converting r g b to a combined int for
+        // transfer to the pixels (see pico-examples)
         void put_pixel(uint32_t pixel_grb) { pio_sm_put_blocking(LED_PIO, LED_SM, pixel_grb << 8u); };
         uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) { 
             return ((uint32_t) (r) << 8) | ((uint32_t) (g) << 16) | (uint32_t) (b);

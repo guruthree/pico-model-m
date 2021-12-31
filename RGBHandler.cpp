@@ -40,14 +40,14 @@ RGBHandler::RGBHandler() {
 }
 
 void RGBHandler::begin() {
+    // register and init ws2812 pio program (see pico-examples)
     uint offset = pio_add_program(LED_PIO, &ws2812_program);
-
     ws2812_program_init(LED_PIO, LED_SM, offset, WS2812_PIN, 800000, IS_RGBW);
 
-    // Timer for udating the RGB nicely
+    // timer for udating the RGB nicely
     add_repeating_timer_ms(10, RGBloopTask, NULL, &RGBtimer);
 
-    put_pixel(0);
+    put_pixel(0); // start with LED off to avoid
 }
 
 void RGBHandler::updateTargetColor(float r, float g, float b) {
@@ -56,7 +56,7 @@ void RGBHandler::updateTargetColor(float r, float g, float b) {
     targetColor[2] = b;
 }
 
-// This function is called by a timer to change the on-board LED to flash
+// this function is called by a timer to change the on-board LED to flash
 // differently depending on USB state and change it nicely
 bool RGBHandler::loopTask(repeating_timer_t *rt) {
     if (Keyboard.getNumLock() && !Keyboard.getCapsLock()) {
@@ -69,7 +69,7 @@ bool RGBHandler::loopTask(repeating_timer_t *rt) {
         setPurple();
     }
     else {
-        if ( !TinyUSBDevice.mounted() ) {
+        if ( !TinyUSBDevice.mounted() ) { // || !usb_hid.ready() ?
             setBlue();
         }
         else {
@@ -77,16 +77,19 @@ bool RGBHandler::loopTask(repeating_timer_t *rt) {
         }
     }
 
+    // smoothly change between current color and target color
     for (uint8_t c; c < 3; c++) {
-        currentColor[c] += (targetColor[c] - currentColor[c]) / 5;
+        currentColor[c] += (targetColor[c] - currentColor[c]) / 5.0f;
     }
-    put_pixel(urgb_u32(currentColor[1], currentColor[0], currentColor[2])); // g r b
+    // note this is in g r b, not r g b because my dodgy led has r and g reversed
+    put_pixel(urgb_u32(currentColor[1], currentColor[0], currentColor[2]));
 
     return true;
 }
 
 RGBHandler RGB;
 
+// the actual looping task function so that it can be called from the object
 bool RGBloopTask(repeating_timer_t *rt) {
     return RGB.loopTask(rt);
 }
