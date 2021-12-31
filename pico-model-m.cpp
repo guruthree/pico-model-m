@@ -56,12 +56,15 @@ uint64_t lastpress = 0;
 
 int main() {
     bi_decl(bi_program_description("Firmware to scan an IBM Model M keyboard matrix and register as a USB Keyboard"));
-
-    sleep_ms(10); // a pause to even out power usage
+    TinyUSBDevice.detach(); // don't do anything USB until we're ready
 
     // initialise RGB
     RGB.begin();
     RGB.setBlue();
+
+    // initialise USB (it'll wait here until plugged in)
+    Keyboard.begin();
+//    sleep_ms(3000); // let USB settle (needed for my KVM?)
 
     // initialise variables for detecting key press
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
@@ -74,9 +77,6 @@ int main() {
     // initialise the keyboard matrix
     // this will launch the matrix scan onto the second core
     KeyMatrix.begin();
-
-    // initialise USB (it'll wait here until plugged in)
-    Keyboard.begin();
 
     // main loop
     while (1) {

@@ -30,7 +30,7 @@
 #include <algorithm>
 
 #include "usb.h"
-#include "Adafruit_USBD_CDC-stub.h"
+//#include "Adafruit_USBD_CDC-stub.h"
 #include "Adafruit_TinyUSB_Arduino/src/Adafruit_TinyUSB.h"
 #include "USBKeyboard.h"
 
@@ -43,16 +43,22 @@ uint8_t const desc_hid_report[] =
 };
 
 extern Adafruit_USBD_Device TinyUSBDevice;
-Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report));
+Adafruit_USBD_HID usb_hid;
 
 USBKeyboard::USBKeyboard() {
 }
 
+void TinyUSB_Port_InitDevice(uint8_t rhport);
+
 void USBKeyboard::begin() {
-    TinyUSBDevice.begin();
+    // the following are equivalent to TinyUSBDevice.begin(), but don't require the link against CDC
+    TinyUSBDevice.clearConfiguration();
+    TinyUSB_Port_InitDevice(0);
+    usb_hid.setPollInterval(2);
+    usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
     usb_hid.setStringDescriptor("A Battleship that lives again");
     usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
-//    usb_hid.setBootProtocol(true); // shouldn't be needed?
+//    usb_hid.setBootProtocol(true); // we implement 6KRO, (but we don't play nice and allow multiple modifiers)
     usb_hid.begin();
     while ( !TinyUSBDevice.mounted() ) {
         sleep_us(1000);
