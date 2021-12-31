@@ -69,7 +69,7 @@ void MatrixScanner::begin() {
     }
     sleep_ms(2);
 
-
+    mutex_init(&mx1);
     multicore_launch_core1(core1_entry);
 }
 
@@ -234,8 +234,6 @@ void MatrixScanner::setpininput(uint8_t pin) {
 MatrixScanner KeyMatrix;
 
 void core1_entry() {
-    mutex_init(KeyMatrix.getMutex());
-
     while (1) {
         mutex_enter_blocking(KeyMatrix.getMutex()); // lock
         KeyMatrix.scan();
