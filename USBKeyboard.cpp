@@ -55,7 +55,7 @@ void USBKeyboard::begin() {
 //    usb_hid.setBootProtocol(true); // shouldn't be needed?
     usb_hid.begin();
     while ( !TinyUSBDevice.mounted() ) {
-        sleep_ms(5);
+        sleep_us(1000);
     }
 }
 
@@ -128,7 +128,7 @@ void USBKeyboard::sendReport() {
         // https://wiki.osdev.org/USB_Human_Interface_Devices
         usb_hid.keyboardReport(RID_KEYBOARD, modifiers, (uint8_t*)overflow);
     }
-    sleep_us(1000);
+    sleep_us(500);
 }
 
 uint8_t const conv_table[128][2] =  { HID_ASCII_TO_KEYCODE };
