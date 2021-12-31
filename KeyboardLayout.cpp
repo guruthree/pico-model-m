@@ -88,6 +88,7 @@ std::vector<specialFunctionDefinition> specials = {
 
     specialFunctionDefinition(9, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x01, 0x00}), // ctrl again - record macro 0x01
     specialFunctionDefinition(14, 2, 10, 1, SPECIAL_BOOTLOADER), // regular 0 + magic 2
+    specialFunctionDefinition(14, 2, 9, 2, SPECIAL_REATTACH), // regular 0 + magic 3
     specialFunctionDefinition(10, 1, 2, 3, SPECIAL_MACRO_RECORD, {0x02, 0x00}), // ctrl again - record macro 0x02
     specialFunctionDefinition(9, 2, 2, 3, SPECIAL_MACRO_RECORD, {0x03, 0x00}), // ctrl again - record macro 0x03
     specialFunctionDefinition(2, 3, SPECIAL_MACRO, {0x01, 0x00}), // again - stop record, playback last selected macro

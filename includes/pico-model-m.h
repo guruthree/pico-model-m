@@ -134,6 +134,11 @@ void handleSpecial(uint8_t down, uint8_t across, bool pressed) { // pressed or r
         case SPECIAL_BOOTLOADER:
             reset_usb_boot(0, 0);
             break;
+        case SPECIAL_REATTACH:
+            TinyUSBDevice.detach();
+            sleep_ms(1000);
+            TinyUSBDevice.attach();
+            break;
         default:
             break;
     }

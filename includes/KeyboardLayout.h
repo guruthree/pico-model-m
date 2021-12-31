@@ -54,6 +54,7 @@ enum specialType {
     SPECIAL_RUN,
     SPECIAL_SCROLL,
     SPECIAL_BOOTLOADER,
+    SPECIAL_REATTACH,
 };
 
 // struct to store special key functions
