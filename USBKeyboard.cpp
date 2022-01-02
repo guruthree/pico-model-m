@@ -106,7 +106,7 @@ void USBKeyboard::releaseScancode(uint8_t k) {
 
         if (keys.size() > MAX_KEYS) {
             // still overflowing :(
-            overflowing = false;
+            overflowing = true;
         }
         else {
             // add back onto the end of keys to ensure it's the proper size
