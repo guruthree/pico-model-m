@@ -57,10 +57,12 @@ This is also fully reversible.
 It's a keyboard?
 Standard 101 key operation is the same.
 It should be plug and play, although it won't work properly with my fiddly KVM due to some sort of signalling issue, it works fine connected through the KVM's USB hub.
-Of the extra functions, F13-F24, F13 is programmed to be escape.
+
+Of the extra function keys, F13-F24, F13 is programmed to be escape.
 F14-F23 are "Magic" keys.
 F14-F16 are modifier keys that combined with F17-F23 type in 3x7=21 useful things.
 I have these set to be useful for programming like typing in else, continue, etc.
+
 Of the keys to the left, the left column top to bottom is escape, pause/break, scroll lock, print screen, Windows/super.
 The right column top to bottom is the again (macro) key, copy, cut, paste, context/application menu.
 Magic 1-Magic 3 (F14-F16) on their own select macro 1, 2, or 3.
@@ -70,5 +72,6 @@ Macros are only key presses and releases in sequence, they do not playback at th
 Macros do not record/activate magic keys or other macros.
 Magic 2 (F15) + number row 0 will put the PGA2040 programming mode, i.e., it will appear as a USB drive to copy a new .uf2 firmware to.
 Magic 3 (F16) + number row 0 will trigger a USB disconnect and reconnect.
+
 The central arrow cluster key plus an arrow in a direction will send mouse scrolls in that direction continuously while pressed.
 The number pad contains an extra key where the double height + would be, the upper key is the standard +, the lower (extra) key types in a ^.
