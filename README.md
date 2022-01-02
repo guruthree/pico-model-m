@@ -16,12 +16,21 @@ The lack of a USB header on the PGA2040 is also a plus, as that makes it easy to
 
 ### Compiling
 
-After setting up the [pico-sdk](https://github.com/raspberrypi/pico-sdk),
+Download the sources
 ```
 git clone https://github.com/guruthree/pico-model-m.git
+```
+
+Double check the keyboard mapping, matrix pins, and special function definitions in KeyboardLayout.cpp.
+Check the RGB LED pin in RGBHandler.h and the colour order in the put_pixel call in RGBHandler.cpp.
+Check CMakeLists.txt for the correct PICO_BOARD definition.
+Check pico-model-m.cpp if you want to change the scroll speed and MatrixScanner.cpp for the debounce time or ghosting protection.
+
+After setting up the [pico-sdk](https://github.com/raspberrypi/pico-sdk),
+```
 cd pico-model-m
 mkdir build
 cd build
-cmake -DPICO_BOARD=pimoroni_pga2040 ..
+cmake ..
 make
 ```
