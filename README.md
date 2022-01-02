@@ -40,7 +40,7 @@ make
 
 ### Hardware setup
 
-Prepare your PGA2040, it's going to need headers
+Prepare your PGA2040, at the very least it's going to need headers.
 I used double right-angle Dupont headers.
 Attach a PGA2040 to your keyboard membrane, noting what PGA2040 pin connects to what matrix pin - you'll need to update KeyboardLayout.cpp.
 I soldered right angle Dupont headers onto the original PCB, either onto pads or onto the original pull down/up resistors, clipping the other end.
