@@ -33,9 +33,6 @@
 #include "USBKeyboard.h"
 #include "RGBHandler.h"
 
-#define WS2812_PIN 0
-#define IS_RGBW false
-
 RGBHandler::RGBHandler() {
 }
 

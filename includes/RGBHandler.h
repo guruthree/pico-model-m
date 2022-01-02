@@ -32,6 +32,8 @@
 #include "hardware/pio.h"
 
 #define NUM_PIXELS 1
+#define WS2812_PIN 0
+#define IS_RGBW false
 
 #define LED_PIO pio0
 #define LED_SM 0

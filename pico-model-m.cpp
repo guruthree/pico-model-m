@@ -56,6 +56,13 @@ uint64_t lastpress = 0;
 
 int main() {
     bi_decl(bi_program_description("Firmware to scan an IBM Model M keyboard matrix and register as a USB Keyboard"));
+    bi_decl(bi_program_version_string(VERSION));
+    bi_decl(bi_program_build_date_string(BUILD_TIME));
+    bi_decl(bi_program_url("https://github.com/guruthree/pico-model-m"));
+    bi_decl(bi_1pin_with_name(WS2812_PIN, "ws2812 RGB LED"));
+    bi_decl(bi_pin_mask_with_name(0xfffff << 1, "Matrix columns"));
+    bi_decl(bi_pin_mask_with_name(0xff << 21, "Matrix rows"));
+    bi_decl(bi_program_feature("USB HID, GPIO, RGB"))
     TinyUSBDevice.detach(); // don't do anything USB until we're ready
 
     // initialise RGB

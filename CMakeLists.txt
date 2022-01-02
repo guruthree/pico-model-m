@@ -42,6 +42,15 @@ add_definitions(-DCFG_TUSB_CONFIG_FILE="includes/tusb_config.h")
 
 set(PICO_BOARD "pimoroni_pga2040" CACHE STRING "" FORCE)
 
+# for bi_decl
+set(PICO_STDIO_UART 0 CACHE BOOL "" FORCE)
+execute_process(COMMAND git log --pretty=format:"%h" -n 1
+                OUTPUT_VARIABLE GIT_REV
+                ERROR_QUIET)
+add_definitions(-DVERSION=${GIT_REV})
+string(TIMESTAMP BUILD_TIME "%Y-%m-%d %H:%M:%S")
+add_definitions(-DBUILD_TIME="${BUILD_TIME}")
+
 
 include_directories(includes
     Adafruit_TinyUSB_Arduino/src
