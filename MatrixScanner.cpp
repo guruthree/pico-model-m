@@ -81,7 +81,6 @@ void MatrixScanner::scan() {
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
 
         gpio_set_dir(across[i], GPIO_OUT);
-        gpio_set_drive_strength(across[i], GPIO_DRIVE_STRENGTH_12MA);
         gpio_put(across[i], 1);
         sleep_us(30); // delay for changes to GPIO to settle
         uint32_t readings = gpio_get_all();
@@ -225,9 +224,6 @@ bool MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool out
 // set the pin to input so that it doesn't "drive the bus"
 void MatrixScanner::setpininput(uint8_t pin) {
     gpio_set_dir(pin, GPIO_IN);
-    // the key will almost certainly be pressed at the moment we're scanning
-    // so we can turn off hysteresis and go for the faster read
-    gpio_set_input_hysteresis_enabled(pin, 0);
     gpio_pull_down(pin);
 }
 
