@@ -46,15 +46,15 @@ extern uint8_t down[NUM_DOWN];
 extern uint8_t keyboardlayout[NUM_DOWN][NUM_ACROSS];
 
 enum specialType {
-    SPECIAL_TYPE,
-    SPECIAL_PRESS,
-    SPECIAL_MACRO,
-    SPECIAL_MACRO_RECORD,
-    SPECIAL_MACRO_SELECT,
-    SPECIAL_RUN,
-    SPECIAL_SCROLL,
-    SPECIAL_BOOTLOADER,
-    SPECIAL_REATTACH,
+    SPECIAL_TYPE, // have the keyboard type out the contents of a string
+    SPECIAL_PRESS, // press the specified key code(s) at once & release at once when the key is released
+    SPECIAL_MACRO, // playback a macro
+    SPECIAL_MACRO_RECORD, // record the specified macro
+    SPECIAL_MACRO_SELECT, // switch playback to the specified macro
+    SPECIAL_RUN, // launch an application in a terminal based on alt-f3 key combo to open it
+    SPECIAL_SCROLL, // switch to scroll mode
+    SPECIAL_BOOTLOADER, // enter the pico bootloader to update the firmware
+    SPECIAL_REATTACH, // software USB disconnect and reconnect
 };
 
 // struct to store special key functions
@@ -65,7 +65,7 @@ struct specialFunctionDefinition {
     uint8_t down2;
     bool twokey = false;
     specialType type;
-    std::string topress = ""; // keys to press, or other optional arguments (like macro number)
+    std::string topress = ""; // keys to press, or other optional arguments (like macro number) as a 0x00 terminated array
     specialFunctionDefinition(uint8_t a, uint8_t d, specialType t) : across(a), down(d), type(t) {}
     specialFunctionDefinition(uint8_t a, uint8_t d, specialType t, std::string t2) : across(a), down(d), type(t), topress(t2) {}
     specialFunctionDefinition(uint8_t a, uint8_t d, uint8_t a2, uint8_t d2, specialType t) : across(a), down(d), across2(a2), down2(d2), type(t), twokey(true) {}

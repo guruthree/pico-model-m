@@ -42,6 +42,7 @@ class MatrixScanner {
         // used for checking ghosting
         std::vector<uint8_t> k1, k2;
 
+        // mutext to lock a ccess to pinstate and lastpinstate
         mutex_t mx1;
 
         void setpininput(uint8_t pin);

@@ -29,9 +29,10 @@
 // everything for the special/macro functions
 
 bool macrorecording = false;
-// record the macro here
+// variables to store the recorded macros
 std::vector< std::vector<uint8_t> > macro_scancode(NUM_MACROS, std::vector<uint8_t>(0));
 std::vector< std::vector<uint8_t> > macro_pressed(NUM_MACROS, std::vector<uint8_t>(0));;
+// the currently selected macro
 uint8_t activemacro = 0;
 
 // called when scancode 0xFF is pressed

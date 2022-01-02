@@ -69,6 +69,7 @@ void MatrixScanner::begin() {
     }
     sleep_ms(2);
 
+    // setup for running on the second core
     mutex_init(&mx1);
     multicore_launch_core1(core1_entry);
 }
@@ -77,7 +78,7 @@ void MatrixScanner::scan() {
     uint64_t now;
     bool temp;
 
-    // Loop through each send pin and then check each read pin
+    // loop through each send pin and then check each read pin
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
 
         gpio_set_dir(across[i], GPIO_OUT);
@@ -94,10 +95,6 @@ void MatrixScanner::scan() {
                 pinstate[j][i] = temp;
                 lastpinchangetime[j][i] = now;
             }
-/*            if (temp != pinstate[j][i] && pinstate[j][i] == lastpinstate[j][i]) { // i.e. it's not been reported
-                pinstate[j][i] = temp;
-                lastpinchangetime[j][i] = now;
-            }*/
         }
     }
 }
@@ -106,7 +103,20 @@ void MatrixScanner::preventGhosting() {
     // do ghost detection, if there's a ghosted key detected that's newly pressed, ignore it
     // if there is ghosting, but the ghosted key is an impossible key (HID_KEY_NONE) allow it
 
-    // keys with no mapping should never be pressed
+    // ghosting example: try pressing any three of
+    // 2 3
+    // w e
+    // these are right next to each other in the matrix and make up 4 corners of
+    // an electrical box. if 2, w, and e are pressed, the electricity sent at column e
+    // to scan bridges from the e to w, then w to 2. since the column with e is being
+    // scalled the electricity at 2 registers as electricity at 3, even though it's not
+    // been pressed - this is ghosting. any 4 corners of a box on the matrix will act
+    // this way. thus, we know that if 4 corners are all lit up it's impossible, to tell
+    // whether it was 2 or 3 pressed, it must be ghosting, and should be ignored.
+
+    // there are some clever tricks we can use though. if there's no key switch at a 
+    // location in the matrix, e.g. the 2 key didn't exist we would know it had to be 3
+    // that was actually pressed. this, keys with no mapping should never be pressed
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
             if (pinstate[j][i] && keyboardlayout[j][i] == HID_KEY_NONE) {
@@ -115,9 +125,10 @@ void MatrixScanner::preventGhosting() {
         }
     }
 
-    // due to unfortanate matrixing, ctrl alt shift combos can result in ghosting and therefore be ignored.
+    // due to unfortanate matrixing, ctrl alt shift combos can result in ghosting. luckily,
     // since in almost all cases pressing one mod key means the other one wouldn't do anything,
-    // ignore the second one that was pressed
+    // we can ignore the second modifier that was pressed. this is needed to be able to do
+    // l_ctrl, l_alt, l_shift as a key combo
     if (pinstate[7][0] && pinstate[0][3]) { // l_alt, r_alt
         if (lastpinstate[7][0]) {
             pinstate[0][3] = false;
@@ -145,9 +156,10 @@ void MatrixScanner::preventGhosting() {
 
     // caps lock and num lock are never part of a combo, ignore as part of a key combo for anti-ghosting?
 
+    // now that the easy logical exclusions are done, check through each activated key to see if it's
+    // a real key press or if it's been caused by ghosting
     bool newpinstate[NUM_DOWN][NUM_ACROSS];
     memcpy(newpinstate, pinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
-    // check through each activated key to see if it's ghosting
     for (uint8_t i = 0; i < NUM_ACROSS; i++) {
         for (uint8_t j = 0; j < NUM_DOWN; j++) {
             if (pinstate[j][i]) {
@@ -167,7 +179,7 @@ void MatrixScanner::preventGhosting() {
 
                 // if there's nothing across on the same row there's definetely
                 // no ghosting, as ghosting is evidenced by 4 corners being
-                // highlighted (or vice versa? but both can't be true?)
+                // highlighted
                 if (k1.size() == 0 || k2.size() == 0) {
                     continue;
                 }
@@ -178,7 +190,7 @@ void MatrixScanner::preventGhosting() {
                     for (uint8_t j2 = 0; j2 < k2.size(); j2++) {
                         if (pinstate[j][i] && pinstate[k2[j2]][i] && pinstate[j][k1[i2]] && pinstate[k2[j2]][k1[i2]]) {
                             // 4 corners will register with three corners pressed, so 
-                            // legitametely detecting this is impossible, definitely ghosting happening
+                            // legitimately detecting this is impossible, definitely ghosting happening
                             if (!lastpinstate[j][i]) {
                                 newpinstate[j][i] = 0;
                             }
@@ -204,7 +216,10 @@ void MatrixScanner::preventGhosting() {
     memcpy(pinstate, newpinstate, NUM_DOWN*NUM_ACROSS*sizeof(bool));
 }
 
+// the main loop uses this to copy the state of the matrix and check if it's changed
 bool MatrixScanner::getPinState(bool outpinstate[NUM_DOWN][NUM_ACROSS], bool outlastpinstate[NUM_DOWN][NUM_ACROSS]) {
+    // a mutex is used here to lockout changes to pinstate and lastpinstate so that
+    // we don't try and update in the middle of scanning
     bool locked = mutex_enter_timeout_ms(&mx1, 1); // request lock
     if (locked) {
         // we got the lock so we can update

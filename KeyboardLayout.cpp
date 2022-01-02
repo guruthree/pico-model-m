@@ -37,6 +37,7 @@ uint8_t down[NUM_DOWN] = {28, 26, 27, 21, 23, 25, 22, 24};
 // https://deskthority.net/wiki/Scancode
 
 // 0xFF -> special function to be handed differently
+// mapping of matrix row/column to scan code
 uint8_t keyboardlayout[NUM_DOWN][NUM_ACROSS] = {
 //                          0 (pin 1)             1 (pin 2)              2 (pin 3)            3 (pin 4)          4 (pin 5)     5 (pin 6)     6 (pin 7)  7 (pin 8)  8 (pin 9)      9 (pin 10)   10 (pin 11)  11 (pin 12)             12 (pin 13)      13 (pin 14)           14 (pin 15)         15 (pin 16)        16 (pin 17)            17 (pin 18)              18 (pin 19)           19 (pin 20)
 /*0 (pin 1)*/{   HID_KEY_CONTROL_LEFT,  HID_KEY_APPLICATION,      HID_KEY_GUI_LEFT,   HID_KEY_ALT_RIGHT,      HID_KEY_NONE, HID_KEY_NONE, HID_KEY_NONE, HID_KEY_G, HID_KEY_H, HID_KEY_ESCAPE,   HID_KEY_F1,  HID_KEY_F2,          HID_KEY_NONE,     HID_KEY_NONE,   HID_KEY_APOSTROPHE, HID_KEY_ARROW_DOWN,  HID_KEY_ARROW_UP,          HID_KEY_NONE,            HID_KEY_NONE,                 0xFF},
@@ -49,26 +50,26 @@ uint8_t keyboardlayout[NUM_DOWN][NUM_ACROSS] = {
 /*7 (pin 8)*/{       HID_KEY_ALT_LEFT,        HID_KEY_SPACE, HID_KEY_CONTROL_RIGHT,  HID_KEY_SHIFT_LEFT, HID_KEY_BACKSLASH, HID_KEY_NONE, HID_KEY_NONE, HID_KEY_B, HID_KEY_N,           0xFF,         0xFF, HID_KEY_F12,          HID_KEY_NONE,     HID_KEY_NONE,        HID_KEY_SLASH,       HID_KEY_NONE,      HID_KEY_NONE,      HID_KEY_KEYPAD_0,  HID_KEY_KEYPAD_DECIMAL, HID_KEY_KEYPAD_ENTER}
 };
 
-
+// F14-F23 are what I'm calling Magic 1 through Magic 9, these are used to execute special functions (see below)
 // magic1: 9, 1 - magic2: 10, 1 - magic3: 9, 2
 // magic4: 9, 3 - magic5: 10, 3 - magic6: 9, 4 
 // magic7: 9, 5 - magic8: 10, 5 - magic9: 9, 6 - magic10: 9, 7
 
 std::vector<specialFunctionDefinition> specials = {
-    specialFunctionDefinition(0, 1, SPECIAL_TYPE, "^"), // keypad carrot
-    specialFunctionDefinition(2, 5, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_X, 0x00}), // cut
-    specialFunctionDefinition(1, 4, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_C, 0x00}), // copy
-    specialFunctionDefinition(2, 1, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_V, 0x00}), // paste
-    specialFunctionDefinition(10, 7, SPECIAL_RUN, "octave"), // octave
-    specialFunctionDefinition(19, 0, SPECIAL_SCROLL), // scroll mode
+    specialFunctionDefinition(0, 1, SPECIAL_TYPE, "^"), // keypad carrot (extra key above keypad enter)
+    specialFunctionDefinition(2, 5, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_X, 0x00}), // cut   on the
+    specialFunctionDefinition(1, 4, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_C, 0x00}), // copy  left hand
+    specialFunctionDefinition(2, 1, SPECIAL_PRESS, {HID_KEY_CONTROL_LEFT, HID_KEY_V, 0x00}), // paste side keys
+    specialFunctionDefinition(10, 7, SPECIAL_RUN, "octave"), // F24, launches an application, in this case octave
+    specialFunctionDefinition(19, 0, SPECIAL_SCROLL), // scroll mode (arrow key cluster center)
 
-    specialFunctionDefinition(9, 1, 9, 3, SPECIAL_TYPE, "else"), // magic1
+    specialFunctionDefinition(9, 1, 9, 3, SPECIAL_TYPE, "else"), // magic1 + magic4
     specialFunctionDefinition(9, 1, 10, 3, SPECIAL_TYPE, "if"), // magic1
     specialFunctionDefinition(9, 1, 9, 4, SPECIAL_TYPE, "for"), // magic1
     specialFunctionDefinition(9, 1, 9, 5, SPECIAL_TYPE, "end"), // magic1
     specialFunctionDefinition(9, 1, 10, 5, SPECIAL_TYPE, "break"), // magic1
     specialFunctionDefinition(9, 1, 9, 6, SPECIAL_TYPE, "continue"), // magic1
-    specialFunctionDefinition(9, 1, 9, 7, SPECIAL_TYPE, "while"), // magic1
+    specialFunctionDefinition(9, 1, 9, 7, SPECIAL_TYPE, "while"), // magic1 + magic9
 
     specialFunctionDefinition(10, 1, 9, 3, SPECIAL_TYPE, "()"), // magic2
     specialFunctionDefinition(10, 1, 10, 3, SPECIAL_TYPE, "[]"), // magic2

@@ -36,6 +36,7 @@
 
 #define MAX_KEYS 6
 
+// we're going to present to the computer as both a keyboard and mouse (the latter so we can scroll)
 uint8_t const desc_hid_report[] =
 {
     TUD_HID_REPORT_DESC_KEYBOARD( HID_REPORT_ID(RID_KEYBOARD) ),
@@ -48,6 +49,7 @@ Adafruit_USBD_HID usb_hid;
 USBKeyboard::USBKeyboard() {
 }
 
+// function header to avoid a whole include that causes conflicts
 void TinyUSB_Port_InitDevice(uint8_t rhport);
 
 void USBKeyboard::begin() {
@@ -58,7 +60,7 @@ void USBKeyboard::begin() {
     usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
     usb_hid.setStringDescriptor("A Battleship that lives again");
     usb_hid.setReportCallback(NULL, hid_report_callback); // for status LEDs
-//    usb_hid.setBootProtocol(true); // we implement 6KRO, (but we don't play nice and allow multiple modifiers)
+//    usb_hid.setBootProtocol(true); // we implement 6KRO, (but we don't play nice and allow multiple modifiers) so we probably shouldn't claim we're using boot protocol
     usb_hid.begin();
     while ( !TinyUSBDevice.mounted() ) {
         sleep_us(1000);
@@ -69,16 +71,16 @@ void USBKeyboard::pressScancode(uint8_t k) {
     if (k == HID_KEY_NONE) {
         return;
     }
-    if (k >= HID_KEY_CONTROL_LEFT && k <= HID_KEY_GUI_RIGHT) {
+    if (k >= HID_KEY_CONTROL_LEFT && k <= HID_KEY_GUI_RIGHT) { // modifier keys
         k -= HID_KEY_CONTROL_LEFT;
-        modifiers |= (1 << k);
+        modifiers |= (1 << k); // store modifers in the format they'll be sent
     }
-    else {
-        // assume all is well
+    else { // regular keys
+        // assume there is no overflowing
         overflowing = false;
         // put the pressed key at the start of keys
         keys.insert(keys.begin(), k);
-        // this makes keys 7 long, if all is well the value in that position is 0
+        // this makes keys 7 long, if there is no overflowing then value at the end should be 0
         if (keys[MAX_KEYS] == HID_KEY_NONE) {
             // in which case remove that value so that keys is the correct length
             while (keys.size() > MAX_KEYS) keys.pop_back();
@@ -96,11 +98,11 @@ void USBKeyboard::releaseScancode(uint8_t k) {
     if (k == HID_KEY_NONE) {
         return;
     }
-    if (k >= HID_KEY_CONTROL_LEFT && k <= HID_KEY_GUI_RIGHT) {
+    if (k >= HID_KEY_CONTROL_LEFT && k <= HID_KEY_GUI_RIGHT) { // modifier keys
         k -= HID_KEY_CONTROL_LEFT;
         modifiers &= ~(1 << k);
     }
-    else {
+    else { // regular keys
         // remove the key wherever it is from keys, which will shrink keys
         keys.erase(std::remove(keys.begin(), keys.end(), k), keys.end());
 
@@ -119,6 +121,7 @@ void USBKeyboard::releaseScancode(uint8_t k) {
     }
 }
 
+// send a message to the computer about what keys are currently pressed
 void USBKeyboard::sendReport() {
     if ( TinyUSBDevice.suspended() )  {
         TinyUSBDevice.remoteWakeup();
@@ -137,8 +140,10 @@ void USBKeyboard::sendReport() {
     sleep_us(500);
 }
 
+// see tinyusb hid.h
 uint8_t const conv_table[128][2] =  { HID_ASCII_TO_KEYCODE };
 
+// write out text through the keyboard
 void USBKeyboard::type(std::string line) {
     uint8_t k;
 
@@ -163,7 +168,8 @@ void USBKeyboard::type(std::string line) {
     }
 }
 
-// Output report callback for LED indicator such as Caplocks (from hid_keyboard.ino)
+// output report callback for LED indicator such as cap lock (from hid_keyboard.ino)
+// this gets called by tinyusb when the keyboard is told one of the lock states has changed
 void USBKeyboard::uk_hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
 {
     (void) report_id;
@@ -183,6 +189,7 @@ void USBKeyboard::uk_hid_report_callback(uint8_t report_id, hid_report_type_t re
 
 USBKeyboard Keyboard;
 
+// callback wrapper so that it has the class
 void hid_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     Keyboard.uk_hid_report_callback(report_id, report_type, buffer, bufsize);
 }

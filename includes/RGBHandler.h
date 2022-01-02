@@ -31,10 +31,12 @@
 
 #include "hardware/pio.h"
 
+// rgb strip information
 #define NUM_PIXELS 1
 #define WS2812_PIN 0
 #define IS_RGBW false
 
+// these should match WS2812_PIN
 #define LED_PIO pio0
 #define LED_SM 0
 

@@ -22,9 +22,11 @@ git clone https://github.com/guruthree/pico-model-m.git
 ```
 
 Double check the keyboard mapping, matrix pins, and special function definitions in KeyboardLayout.cpp.
+If the mapping of pins to matrix is changed, there are some instances where pinstate[X][Y] is hard coded to certain keys that will need to be changed, e.g., in MatrixScanner.cpp.
 Check the RGB LED pin in RGBHandler.h and the colour order in the put_pixel call in RGBHandler.cpp.
 Check CMakeLists.txt for the correct PICO_BOARD definition.
 Check pico-model-m.cpp if you want to change the scroll speed and MatrixScanner.cpp for the debounce time or ghosting protection.
+Check KeyboardLayout.h and pico-model-m.h for number of macros and the latter as well for the terminal key combo.
 
 After setting up the [pico-sdk](https://github.com/raspberrypi/pico-sdk),
 ```

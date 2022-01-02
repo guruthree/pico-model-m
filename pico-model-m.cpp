@@ -41,16 +41,19 @@
 bool pinstate[NUM_DOWN][NUM_ACROSS];
 bool lastpinstate[NUM_DOWN][NUM_ACROSS]; // so we can detect a change
 
-// for scrolling
-extern Adafruit_USBD_HID usb_hid;
-// scroll delay (ms), time between scroll events when key is held down
-#define SCROLL_DELAY 180
-bool doscroll = false; // enable scrolling mode with the arrow keys
-uint64_t lastscroll = 0; // for repeat scrolling
-// the last time a key was pressed to reset out of scroll mode incase it gets stuck
-uint64_t lastpress = 0;
-// time out time in seconds to deactivate scrolling mode in case we get stuck in it
+// these variables are needed for mouse scrolling
+extern Adafruit_USBD_HID usb_hid; // for sending mouseReports
+// press the center arrow cluster key to set
+bool doscroll = false; // to true
+// then press down an arrow key, mouse scrolls will be sent at 
+// scroll delay (ms) intervals
+#define SCROLL_DELAY 150
+// to make sure we don't get stuck scrolling, we have a time out 
+// in seconds to deactivate scrolling mode
+uint64_t lastscroll = 0; // the last time we sent a mouse scroll, for the delay
 #define SCROLL_TIMEOUT 30
+// variable to store when the last time a key was pressed for the timeout
+uint64_t lastpress = 0;
 
 #include "pico-model-m.h"
 
@@ -102,10 +105,12 @@ int main() {
                             handleSpecial(j, i, pinstate[j][i]);
                         }
                         else if (!doscroll) { // only handle regular keys if we're not scrolling
-                            if (pinstate[j][i])
+                            if (pinstate[j][i]) {
                                 Keyboard.pressScancode(scancode);
-                            else
+                            }
+                            else {
                                 Keyboard.releaseScancode(scancode);
+                            }
                         }
                         else {
                             // a scroll key was probably triggered
@@ -125,7 +130,7 @@ int main() {
 
         if (doscroll) { // intercept for scrolling
             uint64_t now = to_us_since_boot(get_absolute_time());
-            if (now - lastscroll > SCROLL_DELAY*1000) {
+            if (now - lastscroll > SCROLL_DELAY*1000) { // only scroll every so often
                 while( !usb_hid.ready() ) {
                     sleep_us(100);
                 }
@@ -144,11 +149,11 @@ int main() {
                 lastscroll = now;
             }
             else if (now - lastpress > SCROLL_TIMEOUT*1e6) {
-                // after X seconds exit out of scroll mode anyway
+                // after X inactive seconds exit out of scroll mode
                 doscroll = false;
             }
         }
 
-        sleep_us(500); // I think the above code takes around 2 ms, so around a 400 hz refresh?
+        sleep_us(500); // I think the above code takes a couple milliseconds, so around a 200 hz refresh?
     }
 }
