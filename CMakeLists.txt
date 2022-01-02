@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
+# these need to be early to be honored on the first cmake
+set(PICO_BOARD "pimoroni_pga2040" CACHE STRING "" FORCE)
+set(PICO_STDIO_UART 0 CACHE BOOL "" FORCE)
+
 include(pico_sdk_import.cmake)
 
 project(pico-model-m_project C CXX ASM)
@@ -40,10 +44,7 @@ add_definitions(-DUSB_PRODUCT="IBM Battleship Keyboard")
 add_definitions(-DARDUINO_ARCH_RP2040)
 add_definitions(-DCFG_TUSB_CONFIG_FILE="includes/tusb_config.h")
 
-set(PICO_BOARD "pimoroni_pga2040" CACHE STRING "" FORCE)
-
 # for bi_decl
-set(PICO_STDIO_UART 0 CACHE BOOL "" FORCE)
 execute_process(COMMAND git log --pretty=format:"%h" -n 1
                 OUTPUT_VARIABLE GIT_REV
                 ERROR_QUIET)
